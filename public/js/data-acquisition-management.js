@@ -8,7 +8,7 @@ function sendStartDataAcquisitionMessage() {
 }
 
 async function startDataAcquisition(events) {
-    const loopTimes = document.getElementById("loop-times").valueAsNumber || 1;
+    const loopTimes = document.getElementById("loop-times-input").valueAsNumber || 1;
     for (let i = 0; i < loopTimes; i++) {
         await executeEvents(events);
     }
