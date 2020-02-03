@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Websocket tutorial</title>
+
+    <!-- Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
+    <script src="/javascripts/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="/stylesheets/style.css">
+
+    <!-- Lodash -->
+    <script src="/javascripts/lodash.js"></script>
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="https://kit.fontawesome.com/6c6025ea9e.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <a class="d-flex justify-content-center" href="/">
+        <img src="/images/xmen.png" alt="X-Men logo" width="80px">
+    </a>
+    <hr class="sidebar-divider my-0">
+</div>
+
+<div class="main">
+    <h2>XCEREBRO - Data acquisition</h2>
+    <div class="container">
+
+        <div class="row justify-content-sm-center">
+            <div class="col-sm-4">
+                <div class="card events">
+                    <div class="card-body form-group">
+                        <h5 class="card-title">Events</h5>
+                        <ul id="events-queue" class="list-group">
+                        </ul>
+
+                        <div class="form-check">
+                            <input type="checkbox" id="loop-cb" class="form-check-input">
+                            <label class="form-check-label" for="loop-cb">Loop</label>
+                        </div>
+
+                        <br/>
+
+                        <div class="input-group input-group-sm mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="input-loop-times">Loop times</span>
+                            </div>
+                            <input type="number" id="loop-times" class="form-control"
+                                   placeholder="Loop times to record data"
+                                   aria-label="Loop times" aria-describedby="input-loop-times">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Add event</h5>
+                        <div class="input-group input-group-sm mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="input-time">Time</span>
+                            </div>
+                            <input id="duration-event" type="number" class="form-control"
+                                   aria-label="Time" aria-describedby="input-time" value="10">
+                        </div>
+
+                        <div class="btn-group" role="group" aria-label="Actions">
+                            <button type="button" class="btn btn-outline-secondary" onclick="sendAddLeftEventMessage()">
+                                Left
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="sendAddRestEventMessage()">
+                                Rest
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary"
+                                    onclick="sendAddRightEventMessage()">Right
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <br/>
+
+        <div class="row justify-content-sm-center">
+            <div class="col-sm-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Data acquisition</h5>
+                        <div class="row justify-content-between data-acquisition">
+                            <div class="col-sm-4">
+                                <div class="row">
+                                    <span id="left-arrow" class="arrow-off">
+                                      <i class="fas fa-arrow-circle-left fa-7x"></i>
+                                    </span>
+                                </div>
+                                <div class="row justify-content-center">
+                                    <p id="left-timer"></p>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="row justify-content-end">
+                                    <span id="right-arrow" class="arrow-off">
+                                      <i class="fas fa-arrow-circle-right fa-7x"></i>
+                                    </span>
+                                </div>
+                                <div class="row justify-content-center">
+                                    <p id="right-timer"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="float-right">
+                            <button id="stop-data-acquisition-button" type="button" class="btn btn-danger"
+                                    onclick="stopDataAcquisition()" disabled>
+                                <i class="fas fa-stop-circle"></i> Stop
+                            </button>
+                            <button id="start-data-acquisition-button" type="button" class="btn btn-primary"
+                                    onclick="sendStartDataAcquisitionMessage()">
+                                <i class="fas fa-play-circle"></i> Start
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io("http://localhost:3000");
+    const events = document.getElementById("events-queue");
+    let stopSignal = false;
+
+    function configureWindow() {
+        const loopCb = document.getElementById("loop-cb");
+        loopCb.addEventListener("change", function() {
+            switchElement("loop-times", !this.checked);
+        });
+    }
+    configureWindow();
+
+    // EVENTS
+    socket.on("ADD_EVENTS", events => events.forEach(event => addEvent(event)));
+    socket.on("NEW_EVENT", event => addEvent(event));
+    socket.on("REMOVE_EVENT", eventId => deleteEvent(eventId));
+
+    function sendAddLeftEventMessage() {
+        sendAddEventMessage("LEFT");
+    }
+
+    function sendAddRestEventMessage() {
+        sendAddEventMessage("REST");
+    }
+
+    function sendAddRightEventMessage() {
+        sendAddEventMessage("RIGHT");
+    }
+
+    function sendAddEventMessage(direction) {
+        socket.emit("ADD_EVENT", {
+            direction: direction,
+            duration: document.getElementById("duration-event").valueAsNumber || 10
+        });
+        document.getElementById("duration-event").value = 10;
+    }
+
+    function addEvent(event) {
+        const listItem = document.createElement("li");
+        listItem.className = "list-group-item";
+        listItem.dataset.index = event.id;
+
+        const directionsIcon = createIcon("text-muted fas fa-arrows-alt-h");
+
+        const directionText = event.direction.charAt(0).toUpperCase() + event.direction.toLowerCase().slice(1);
+        const contentText = ` ${directionText} ${event.duration}s `;
+        const content = document.createTextNode(contentText);
+
+        const deleteLink = document.createElement("a");
+        deleteLink.className = "text-danger";
+        deleteLink.append(createIcon("fas fa-trash-alt"));
+        deleteLink.onclick = sendDeleteEventMessage(event.id);
+
+        listItem.appendChild(directionsIcon);
+        listItem.appendChild(content);
+        listItem.appendChild(deleteLink);
+
+        events.appendChild(listItem);
+    }
+
+    function createIcon(className) {
+        const icon = document.createElement("i");
+        icon.className = className;
+
+        return icon;
+    }
+
+    function sendDeleteEventMessage(eventId) {
+        return () => socket.emit("DELETE_EVENT", eventId);
+    }
+
+    function deleteEvent(eventId) {
+        events.removeChild(_.find(events.childNodes, e => e.dataset && e.dataset.index === eventId));
+    }
+
+    // DATA ACQUISITION CONTROL
+    socket.on("EXECUTE_DATA_ACQUISITION", events => executeDataAcquisition(events));
+
+    function sendStartDataAcquisitionMessage() {
+        switchStartDataAcquisitionButton(false);
+        switchStopDataAcquisitionButton(true);
+        socket.emit("START_DATA_ACQUISITION");
+    }
+
+    async function executeDataAcquisition(events) {
+        const loopTimes = document.getElementById("loop-times").valueAsNumber || 1;
+        for (let i = 0; i < loopTimes; i++) {
+            await executeEvents(events);
+        }
+
+        stopSignal = false;
+        switchStartDataAcquisitionButton(true);
+        switchStopDataAcquisitionButton(false);
+    }
+
+    async function executeEvents(events) {
+        for (const event of events) {
+            await executeEvent(event);
+        }
+    }
+
+    function switchStartDataAcquisitionButton(enabled) {
+        switchElement("start-data-acquisition-button", enabled);
+    }
+
+    function switchStopDataAcquisitionButton(enabled) {
+        switchElement("stop-data-acquisition-button", enabled);
+    }
+
+    function switchElement(idElement, enabled) {
+        const element = document.getElementById(idElement);
+        element.disabled = !enabled;
+    }
+
+    function executeEvent(event) {
+        if (event.direction === "REST") {
+            return executeRestEvent(event);
+        }
+
+        return executeLeftOrRightEvent(event);
+    }
+
+    function executeRestEvent(event) {
+        return new Promise(resolve => {
+            if (stopSignal) {
+                resolve();
+                return;
+            }
+
+            let seconds = event.duration;
+            const intervalId = setInterval(() => {
+                seconds -= 1;
+
+                if (seconds === 0 || stopSignal) {
+                    clearInterval(intervalId);
+                    resolve();
+                }
+            }, 1000);
+        });
+    }
+
+    function executeLeftOrRightEvent(event) {
+        return new Promise(resolve => {
+            if (stopSignal) {
+                resolve();
+                return;
+            }
+
+            let seconds = event.duration;
+            const direction = event.direction.toLowerCase();
+            const arrow = document.getElementById(`${direction}-arrow`);
+            arrow.className = "arrow-on";
+            const timer = document.getElementById(`${direction}-timer`);
+            timer.textContent = `${seconds} s`;
+
+            const intervalId = setInterval(() => {
+                seconds -= 1;
+
+                if (seconds === 0 || stopSignal) {
+                    timer.textContent = "";
+                    arrow.className = "arrow-off";
+                    clearInterval(intervalId);
+                    resolve();
+                } else {
+                    timer.textContent = `${seconds} s`;
+                }
+            }, 1000);
+        });
+    }
+
+    function stopDataAcquisition() {
+        stopSignal = true;
+    }
+
+</script>
+</body>
+
+</html>

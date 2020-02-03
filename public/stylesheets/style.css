@@ -1,0 +1,85 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-color: #f2f2f2;
+}
+
+.sidebar {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.sidebar a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  color: #818181;
+  display: block;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px;
+  padding: 0 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+}
+
+.sidebar hr.sidebar-divider {
+  margin: 0 1rem 1rem;
+  border-top: 1px solid #eaecf4;
+}
+
+button:disabled {
+  color: #ffffff !important;
+  background-color: #e6e6e6 !important;
+  border-color: #e6e6e6 !important;
+}
+
+.arrow-on {
+  font-size: 30px;
+  color: #2eb82e;
+}
+
+.arrow-off {
+  font-size: 30px;
+  color: #f2f2f2;
+}
+
+.list-group{
+  max-height: 300px;
+  margin-bottom: 10px;
+  overflow:scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card {
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 2px 2px #e6e6e6;
+}
+
+.events {
+  height: 300px;
+}
+
+.events .card-body .list-group {
+  height: 140px;
+}
+
+.data-acquisition {
+  margin-left: 10px;
+  margin-right: 10px;
+}
