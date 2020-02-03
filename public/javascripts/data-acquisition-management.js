@@ -1,5 +1,5 @@
 let stopSignal = false;
-socket.on("EXECUTE_DATA_ACQUISITION", events => executeDataAcquisition(events));
+socket.on("DATA_ACQUISITION_STARTED", events => startDataAcquisition(events));
 
 function sendStartDataAcquisitionMessage() {
     switchStartDataAcquisitionButton(false);
@@ -7,7 +7,7 @@ function sendStartDataAcquisitionMessage() {
     socket.emit("START_DATA_ACQUISITION");
 }
 
-async function executeDataAcquisition(events) {
+async function startDataAcquisition(events) {
     const loopTimes = document.getElementById("loop-times").valueAsNumber || 1;
     for (let i = 0; i < loopTimes; i++) {
         await executeEvents(events);

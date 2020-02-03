@@ -1,8 +1,8 @@
 const events = document.getElementById("events-queue");
 
-socket.on("ADD_EVENTS", events => events.forEach(event => addEvent(event)));
-socket.on("NEW_EVENT", event => addEvent(event));
-socket.on("REMOVE_EVENT", eventId => deleteEvent(eventId));
+socket.on("EVENTS_ADDED", events => events.forEach(event => addEvent(event)));
+socket.on("EVENT_ADDED", event => addEvent(event));
+socket.on("EVENT_DELETED", eventId => deleteEvent(eventId));
 
 function sendAddLeftEventMessage() {
     sendAddEventMessage("LEFT");
