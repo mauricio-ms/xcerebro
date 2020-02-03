@@ -38,26 +38,26 @@ io.on("connection", socket => {
         events.push(preconfiguredEvent);
     }
 
-    socket.emit("ADD_EVENTS", events);
+    socket.emit("EVENTS_ADDED", events);
 
     socket.on("ADD_EVENT", event => {
         event.id = String(eventsSequence++);
         events.push(event);
-        io.emit("NEW_EVENT", event);
+        io.emit("EVENT_ADDED", event);
     });
 
     socket.on("DELETE_EVENT", eventId => {
         let eventIndex = array.findIndex(events, event => event.id === eventId)
         events.splice(eventIndex, 1);
-        io.emit("REMOVE_EVENT", eventId);
+        io.emit("EVENT_DELETED", eventId);
     });
 
     socket.on("START_DATA_ACQUISITION", () => {
-        io.emit("EXECUTE_DATA_ACQUISITION", events);
+        io.emit("DATA_ACQUISITION_STARTED", events);
     });
 });
 
 const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`Server running on port: ${port}`));
 
-module.exports = app;
+module.exports = server;
