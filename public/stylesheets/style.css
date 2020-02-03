@@ -47,6 +47,18 @@ button:disabled {
   border-color: #e6e6e6 !important;
 }
 
+.btn-stop {
+  color: #fff;
+  background-color: #ff6666;
+  border-color: #ff6666;
+}
+
+.btn-stop:hover {
+  color: #fff;
+  background-color: #ff6666;
+  border-color: #ff6666;
+}
+
 .arrow-on {
   font-size: 30px;
   color: #2eb82e;

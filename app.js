@@ -19,9 +19,25 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 let eventsSequence = 0;
+let preconfiguredEvents = [
+    {
+        direction: "REST",
+        duration: 3
+    },
+    {
+        direction: "LEFT",
+        duration: 7
+    }
+];
 let events = [];
 
 io.on("connection", socket => {
+    for (let i=0; i<preconfiguredEvents.length; i++) {
+        const preconfiguredEvent = preconfiguredEvents.shift()
+        preconfiguredEvent.id = String(eventsSequence++);
+        events.push(preconfiguredEvent);
+    }
+
     socket.emit("ADD_EVENTS", events);
 
     socket.on("ADD_EVENT", event => {

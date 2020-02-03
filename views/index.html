@@ -35,8 +35,8 @@
 
 <div class="main">
     <h2>XCEREBRO - Data acquisition</h2>
+    <br/>
     <div class="container">
-
         <div class="row justify-content-sm-center">
             <div class="col-sm-4">
                 <div class="card events">
@@ -122,7 +122,7 @@
                         </div>
 
                         <div class="float-right">
-                            <button id="stop-data-acquisition-button" type="button" class="btn btn-danger"
+                            <button id="stop-data-acquisition-button" type="button" class="btn btn-stop"
                                     onclick="stopDataAcquisition()" disabled>
                                 <i class="fas fa-stop-circle"></i> Stop
                             </button>
@@ -231,7 +231,6 @@
 
         stopSignal = false;
         switchStartDataAcquisitionButton(true);
-        switchStopDataAcquisitionButton(false);
     }
 
     async function executeEvents(events) {
@@ -311,6 +310,7 @@
 
     function stopDataAcquisition() {
         stopSignal = true;
+        switchStopDataAcquisitionButton(false);
     }
 
 </script>
