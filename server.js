@@ -18,7 +18,6 @@ app.use("/", index);
 const server = http.createServer(app);
 const io = socketio(server);
 
-let eventsSequence = 0;
 let preconfiguredEvents = [
     {
         direction: "REST",
@@ -29,32 +28,44 @@ let preconfiguredEvents = [
         duration: 7
     }
 ];
-let events = [];
+
+let configuration = {
+    eventsSequence: 0,
+    events: [],
+    loop: false,
+    loopTimes: null
+};
 
 io.on("connection", socket => {
-    for (let i=0; i<preconfiguredEvents.length; i++) {
-        const preconfiguredEvent = preconfiguredEvents.shift()
-        preconfiguredEvent.id = String(eventsSequence++);
-        events.push(preconfiguredEvent);
+    // Configure some events
+    while(preconfiguredEvents.length > 0) {
+        const preconfiguredEvent = preconfiguredEvents.shift();
+        preconfiguredEvent.id = String(configuration.eventsSequence++);
+        configuration.events.push(preconfiguredEvent);
     }
 
-    socket.emit("EVENTS_ADDED", events);
+    // Emit events to configure the window with server info
+    socket.emit("EVENTS_ADDED", configuration.events);
+    socket.emit("LOOP_CONFIGURED", configuration.loop);
+    socket.emit("LOOP_TIMES_CONFIGURED", configuration.loopTimes);
 
+    // Configure the events that must be listened by the server
     socket.on("ADD_EVENT", event => {
-        event.id = String(eventsSequence++);
-        events.push(event);
-        io.emit("EVENT_ADDED", event);
+        event.id = String(configuration.eventsSequence++);
+        configuration.events.push(event);
+        socket.emit("EVENT_ADDED", event);
     });
 
     socket.on("DELETE_EVENT", eventId => {
-        let eventIndex = array.findIndex(events, event => event.id === eventId)
-        events.splice(eventIndex, 1);
-        io.emit("EVENT_DELETED", eventId);
+        let eventIndex = array.findIndex(configuration.events, event => event.id === eventId);
+        configuration.events.splice(eventIndex, 1);
+        socket.emit("EVENT_DELETED", eventId);
     });
 
-    socket.on("START_DATA_ACQUISITION", () => {
-        io.emit("DATA_ACQUISITION_STARTED", events);
-    });
+    socket.on("CONFIGURE_LOOP", loop => configuration.loop = loop);
+    socket.on("CONFIGURE_LOOP_TIMES", loopTimes => configuration.loopTimes = loopTimes);
+
+    socket.on("START_DATA_ACQUISITION", () => socket.emit("DATA_ACQUISITION_STARTED", configuration.events));
 });
 
 const port = process.env.PORT || 3000;
