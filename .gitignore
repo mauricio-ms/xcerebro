@@ -4,3 +4,6 @@
 
 # NodeJS
 node_modules/
+
+# Data files
+!data/.gitkeep

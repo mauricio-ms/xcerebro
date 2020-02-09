@@ -17,7 +17,9 @@ const configuration = {
     eventsSequence: 0,
     events: [],
     loop: false,
-    loopTimes: null
+    loopTimes: 10,
+    subject: 1,
+    durationEvent: 10
 };
 
 while(preconfiguredEvents.length > 0) {
@@ -31,9 +33,15 @@ function configure(socket) {
     socket.emit("EVENTS_ADDED", configuration.events);
     socket.emit("LOOP_CONFIGURED", configuration.loop);
     socket.emit("LOOP_TIMES_CONFIGURED", configuration.loopTimes);
+    socket.emit("SUBJECT_CONFIGURED", configuration.subject);
+    socket.emit("DURATION_EVENT_CONFIGURED", configuration.durationEvent);
 
     // Configure the events that must be listened by the server
     socket.on("ADD_EVENT", event => {
+        if (!event.duration) {
+            socket.emit("ON_MESSAGE", "The duration of the event should be configured.");
+            return;
+        }
         event.id = String(configuration.eventsSequence++);
         configuration.events.push(event);
         socket.emit("EVENT_ADDED", event);
@@ -47,15 +55,32 @@ function configure(socket) {
 
     socket.on("CONFIGURE_LOOP", loop => configuration.loop = loop);
     socket.on("CONFIGURE_LOOP_TIMES", loopTimes => configuration.loopTimes = loopTimes);
+    socket.on("CONFIGURE_SUBJECT", subject => configuration.subject = subject);
+    socket.on("CONFIGURE_DURATION_EVENT", durationEvent => configuration.durationEvent = durationEvent);
 
     const streamData = new StreamData(configuration.events);
-    socket.on("START_DATA_ACQUISITION", () => streamData.start());
+    socket.on("START_DATA_ACQUISITION", () => {
+        if (!validateToStartDataAcquisition(socket)) {
+            socket.emit("DATA_ACQUISITION_ENDED");
+            return;
+        }
+        streamData.start(configuration.subject);
+    });
 
     socket.on("END_DATA_ACQUISITION", async () => {
         await streamData.stop();
         socket.emit("DATA_ACQUISITION_ENDED");
-        console.log("Streaming ended ...");
+        console.log("Streaming ended.");
     });
+}
+
+function validateToStartDataAcquisition(socket) {
+    if (!configuration.subject) {
+        socket.emit("ON_MESSAGE", "The subject should be configured.");
+        return false;
+    }
+
+    return true;
 }
 
 module.exports = {

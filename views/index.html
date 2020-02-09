@@ -71,8 +71,8 @@
                                 <span class="input-group-text" id="loop-times-span">Loop times</span>
                             </div>
                             <input type="number" id="loop-times-input" class="form-control"
-                                   placeholder="Loop times to record data"
-                                   aria-label="Loop times" aria-describedby="loop-times-span">
+                                   placeholder="Loop times" aria-label="Loop times"
+                                   aria-describedby="loop-times-span">
                         </div>
                     </div>
                 </div>
@@ -80,13 +80,30 @@
             <div class="col-sm-4">
                 <div class="card">
                     <div class="card-body">
+                        <h5 class="card-title">Subject info</h5>
+                        <div class="input-group input-group-sm mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="subject-span">Subject</span>
+                            </div>
+                            <input type="number" id="subject-input" class="form-control"
+                                   placeholder="Subject" aria-label="Subject"
+                                   aria-describedby="subject-span">
+                        </div>
+                    </div>
+                </div>
+
+                <br/>
+
+                <div class="card">
+                    <div class="card-body">
                         <h5 class="card-title">Add event</h5>
                         <div class="input-group input-group-sm mb-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text" id="input-time">Time</span>
+                                <span class="input-group-text" id="duration-event-span">Duration</span>
                             </div>
-                            <input id="duration-event" type="number" class="form-control"
-                                   aria-label="Time" aria-describedby="input-time" value="10">
+                            <input id="duration-event-input" type="number" class="form-control"
+                                   placeholder="Duration" aria-label="Duration"
+                                   aria-describedby="duration-event-span">
                         </div>
 
                         <div class="btn-group" role="group" aria-label="Actions">

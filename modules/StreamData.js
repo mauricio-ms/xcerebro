@@ -10,12 +10,13 @@ const board = new cyton({
 class StreamData {
     constructor(events) {
         this._events = events;
-        this._eegCsvWriter = new EegCsvWriter(1);
+        this._eegCsvWriter = null;
         this._socket = null;
     }
 
-    async start() {
+    async start(subject) {
         this._socket = require("./Socket").getConnection();
+        this._eegCsvWriter = new EegCsvWriter(subject);
         await cleanUp();
         board.on("ready", this._onReady.bind(this));
 

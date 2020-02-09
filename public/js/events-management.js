@@ -19,9 +19,8 @@ function sendAddRightEventMessage() {
 function sendAddEventMessage(direction) {
     socket.emit("ADD_EVENT", {
         direction: direction,
-        duration: document.getElementById("duration-event").valueAsNumber || 10
+        duration: document.getElementById("duration-event-input").valueAsNumber
     });
-    document.getElementById("duration-event").value = 10;
 }
 
 function addEvent(event) {
