@@ -1,5 +1,6 @@
 let stopSignal = false;
 socket.on("DATA_ACQUISITION_STARTED", events => startDataAcquisition(events));
+socket.on("DATA_ACQUISITION_ENDED", () => dataAcquisitionEnded());
 
 function sendStartDataAcquisitionMessage() {
     switchStartDataAcquisitionButton(false);
@@ -13,9 +14,7 @@ async function startDataAcquisition(events) {
         await executeEvents(events);
     }
 
-    stopSignal = false;
-    switchStopDataAcquisitionButton(false);
-    switchStartDataAcquisitionButton(true);
+    socket.emit("END_DATA_ACQUISITION");
 }
 
 async function executeEvents(events) {
@@ -91,6 +90,12 @@ function executeLeftOrRightEvent(event) {
             }
         }, 1000);
     });
+}
+
+function dataAcquisitionEnded() {
+    stopSignal = false;
+    switchStopDataAcquisitionButton(false);
+    switchStartDataAcquisitionButton(true);
 }
 
 function stopDataAcquisition() {

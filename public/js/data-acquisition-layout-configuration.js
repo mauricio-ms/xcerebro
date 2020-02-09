@@ -15,3 +15,5 @@ loopTimesInput.addEventListener("change", function() {
 });
 
 socket.on("LOOP_TIMES_CONFIGURED", loopTimes => loopTimesInput.value = loopTimes);
+
+socket.on("ON_MESSAGE", message => alert(message));
