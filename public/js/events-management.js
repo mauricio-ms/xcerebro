@@ -1,5 +1,11 @@
 const events = document.getElementById("events-queue");
 
+const DirectionEnum = {
+    "LEFT": "Left",
+    "REST": "Rest",
+    "LEFT_OR_RIGHT": "Left or Right"
+};
+
 socket.on("EVENTS_ADDED", events => events.forEach(event => addEvent(event)));
 socket.on("EVENT_ADDED", event => addEvent(event));
 socket.on("EVENT_DELETED", eventId => deleteEvent(eventId));
@@ -16,6 +22,10 @@ function sendAddRightEventMessage() {
     sendAddEventMessage("RIGHT");
 }
 
+function sendAddLeftOrRightEventMessage() {
+    sendAddEventMessage("LEFT_OR_RIGHT");
+}
+
 function sendAddEventMessage(direction) {
     socket.emit("ADD_EVENT", {
         direction: direction,
@@ -30,8 +40,7 @@ function addEvent(event) {
 
     const directionsIcon = createIcon("text-muted fas fa-arrows-alt-h");
 
-    const directionText = event.direction.charAt(0).toUpperCase() + event.direction.toLowerCase().slice(1);
-    const contentText = ` ${directionText} ${event.duration}s `;
+    const contentText = ` ${DirectionEnum[event.direction]} ${event.duration}s `;
     const content = document.createTextNode(contentText);
 
     const deleteLink = document.createElement("a");

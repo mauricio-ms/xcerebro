@@ -1,3 +1,8 @@
+const EventDirectionEnum = {
+    1: "LEFT",
+    2: "Right"
+};
+
 let stopSignal = false;
 socket.on("DATA_ACQUISITION_STARTED", events => startDataAcquisition(events));
 socket.on("DATA_ACQUISITION_ENDED", () => dataAcquisitionEnded());
@@ -79,13 +84,14 @@ function executeLeftOrRightEvent(event) {
             return;
         }
 
-        socket.emit("SET_CURRENT_EVENT", event.direction);
+        const direction = obtainCurrentEventDirection(event.direction);
+        socket.emit("SET_CURRENT_EVENT", direction);
 
+        const directionLowerCase = direction.toLowerCase();
         let seconds = event.duration;
-        const direction = event.direction.toLowerCase();
-        const arrow = document.getElementById(`${direction}-arrow`);
+        const arrow = document.getElementById(`${directionLowerCase}-arrow`);
         arrow.className = "arrow-on";
-        const timer = document.getElementById(`${direction}-timer`);
+        const timer = document.getElementById(`${directionLowerCase}-timer`);
         timer.textContent = `${seconds} s`;
 
         const intervalId = setInterval(() => {
@@ -101,6 +107,13 @@ function executeLeftOrRightEvent(event) {
             }
         }, 1000);
     });
+}
+
+function obtainCurrentEventDirection(direction) {
+    if (direction === "LEFT_OR_RIGHT") {
+        return EventDirectionEnum[randomInt(1, 2)];
+    }
+    return direction;
 }
 
 function dataAcquisitionEnded() {

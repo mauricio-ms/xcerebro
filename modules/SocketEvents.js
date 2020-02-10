@@ -70,7 +70,6 @@ function configure(socket) {
             socket.emit("DATA_ACQUISITION_ENDED");
             return;
         }
-        streamData.setCurrentEvent(EventEnum[configuration.events[0].direction]);
         streamData.start(configuration.subject);
     });
 
