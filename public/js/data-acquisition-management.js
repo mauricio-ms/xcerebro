@@ -8,13 +8,24 @@ function sendStartDataAcquisitionMessage() {
 }
 
 async function startDataAcquisition(events) {
-    const loopTimes = document.getElementById("loop-times-input").valueAsNumber || 1;
-    for (let i = 0; i < loopTimes; i++) {
-        await executeEvents(events);
+    const loop = document.getElementById("loop-cb").checked;
+    if (loop) {
+        await executeEventsInfinitely(events);
+    } else {
+        const loopTimes = document.getElementById("loop-times-input").valueAsNumber;
+        for (let i = 0; i < loopTimes && !stopSignal; i++) {
+            await executeEvents(events);
+        }
     }
 
     closeModal("data-acquisition-modal");
     socket.emit("END_DATA_ACQUISITION");
+}
+
+async function executeEventsInfinitely(events) {
+    while (!stopSignal) {
+        await executeEvents(events);
+    }
 }
 
 async function executeEvents(events) {

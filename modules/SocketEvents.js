@@ -17,7 +17,7 @@ const configuration = {
     eventsSequence: 0,
     events: [],
     loop: false,
-    loopTimes: 10,
+    loopTimes: 1,
     subject: 1,
     durationEvent: 10
 };
