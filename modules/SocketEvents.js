@@ -2,6 +2,12 @@ const array = require("lodash/array");
 
 const StreamData = require("./StreamData");
 
+const EventEnum = {
+  "REST": 0,
+  "LEFT": 1,
+  "RIGHT": 2
+};
+
 const preconfiguredEvents = [
     {
         direction: "REST",
@@ -64,8 +70,11 @@ function configure(socket) {
             socket.emit("DATA_ACQUISITION_ENDED");
             return;
         }
+        streamData.setCurrentEvent(EventEnum[configuration.events[0].direction]);
         streamData.start(configuration.subject);
     });
+
+    socket.on("SET_CURRENT_EVENT", direction => streamData.setCurrentEvent(EventEnum[direction]));
 
     socket.on("END_DATA_ACQUISITION", async () => {
         await streamData.stop();

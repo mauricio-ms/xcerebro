@@ -12,6 +12,7 @@ class StreamData {
         this._events = events;
         this._eegCsvWriter = null;
         this._socket = null;
+        this._event = null;
     }
 
     async start(subject) {
@@ -30,11 +31,15 @@ class StreamData {
         }
     }
 
+    setCurrentEvent(event) {
+        this._event = event;
+    }
+
     async _onReady() {
         console.log("Open BCI board ready to stream data.");
         await this._startStream();
         this._socket.emit("DATA_ACQUISITION_STARTED", this._events);
-        board.on("sample", sample => this._eegCsvWriter.appendSample(sample));
+        board.on("sample", sample => this._eegCsvWriter.appendSample(sample, this._event));
     }
 
     async _startStream() {

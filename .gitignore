@@ -6,4 +6,5 @@
 node_modules/
 
 # Data files
+data/*
 !data/.gitkeep

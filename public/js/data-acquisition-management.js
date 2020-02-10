@@ -58,6 +58,8 @@ function executeRestEvent(event) {
             return;
         }
 
+        socket.emit("SET_CURRENT_EVENT", event.direction);
+
         let seconds = event.duration;
         const intervalId = setInterval(() => {
             seconds -= 1;
@@ -76,6 +78,8 @@ function executeLeftOrRightEvent(event) {
             resolve();
             return;
         }
+
+        socket.emit("SET_CURRENT_EVENT", event.direction);
 
         let seconds = event.duration;
         const direction = event.direction.toLowerCase();

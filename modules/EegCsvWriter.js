@@ -9,13 +9,13 @@ class EegCsvWriter {
         this.csvWriter = createArrayCsvWriter({
             path: this.path,
             header: ["TIMESTAMP", "CHANNEL_1", "CHANNEL_2", "CHANNEL_3", "CHANNEL_4",
-                "CHANNEL_5", "CHANNEL_6", "CHANNEL_7", "CHANNEL_8", "CLASS_DATA"]
+                "CHANNEL_5", "CHANNEL_6", "CHANNEL_7", "CHANNEL_8", "EVENT"]
         });
         this.records = [];
     }
 
-    appendSample(sample) {
-        const record = array.flatten([sample.timestamp, sample.channelData, 1]);
+    appendSample(sample, event) {
+        const record = array.flatten([sample.timestamp, sample.channelData, event]);
         this.records.push(record);
     }
 
