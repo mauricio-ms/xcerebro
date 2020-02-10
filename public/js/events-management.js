@@ -3,6 +3,7 @@ const events = document.getElementById("events-queue");
 const DirectionEnum = {
     "LEFT": "Left",
     "REST": "Rest",
+    "RIGHT": "Right",
     "LEFT_OR_RIGHT": "Left or Right"
 };
 

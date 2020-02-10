@@ -1,6 +1,6 @@
 const EventDirectionEnum = {
     1: "LEFT",
-    2: "Right"
+    2: "RIGHT"
 };
 
 let stopSignal = false;
@@ -13,6 +13,7 @@ function sendStartDataAcquisitionMessage() {
 }
 
 async function startDataAcquisition(events) {
+    openModal("data-acquisition-modal");
     const loop = document.getElementById("loop-cb").checked;
     if (loop) {
         await executeEventsInfinitely(events);

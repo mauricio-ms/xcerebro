@@ -65,12 +65,17 @@ function configure(socket) {
     socket.on("CONFIGURE_DURATION_EVENT", durationEvent => configuration.durationEvent = durationEvent);
 
     const streamData = new StreamData(configuration.events);
-    socket.on("START_DATA_ACQUISITION", () => {
+    socket.on("START_DATA_ACQUISITION", async () => {
         if (!validateToStartDataAcquisition(socket)) {
             socket.emit("DATA_ACQUISITION_ENDED");
             return;
         }
-        streamData.start(configuration.subject);
+        try {
+            await streamData.start(configuration.subject);
+        } catch (e) {
+            socket.emit("ON_MESSAGE", e.message);
+            socket.emit("DATA_ACQUISITION_ENDED");
+        }
     });
 
     socket.on("SET_CURRENT_EVENT", direction => streamData.setCurrentEvent(EventEnum[direction]));
