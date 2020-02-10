@@ -11,9 +11,11 @@ body {
   z-index: 1;
   top: 0;
   left: 0;
-  background-color: #111;
   overflow-x: hidden;
   padding-top: 20px;
+  background: #232526;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(to right, #414345, #232526);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #414345, #232526); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
 .sidebar a {
@@ -30,6 +32,7 @@ body {
 .main {
   margin-left: 160px;
   padding: 0 10px;
+  position: relative;
 }
 
 @media screen and (max-height: 450px) {
@@ -88,10 +91,17 @@ button:disabled {
 }
 
 .events .card-body .list-group {
-  height: 140px;
+  height: 170px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .data-acquisition {
   margin-left: 10px;
   margin-right: 10px;
+}
+
+.modal {
+  position: absolute !important;
+  overflow: hidden !important;
 }

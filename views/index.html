@@ -119,48 +119,58 @@
                         </div>
                     </div>
                 </div>
+
+                <br/>
+
+                <button type="button" class="btn btn-primary float-right"
+                        onclick="sendStartDataAcquisitionMessage()"
+                        data-toggle="modal" data-target="#data-acquisition-modal"
+                        data-backdrop="static" data-keyboard="false">
+                    <i class="fas fa-play-circle"></i> Start
+                </button>
             </div>
         </div>
+    </div>
 
-        <br/>
-
-        <div class="row justify-content-sm-center">
-            <div class="col-sm-8">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Data acquisition</h5>
-                        <div class="row justify-content-between data-acquisition">
-                            <div class="col-sm-4">
-                                <div class="row">
-                                    <span id="left-arrow" class="arrow-off">
-                                      <i class="fas fa-arrow-circle-left fa-7x"></i>
-                                    </span>
+    <div id="data-acquisition-modal" class="modal fade" tabindex="-1"
+         role="dialog" aria-labelledby="data-acquisition-modal-title" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="data-acquisition-modal-title" class="modal-title">Data acquisition</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row justify-content-sm-center">
+                        <div class="col-sm-12">
+                            <div class="row justify-content-between data-acquisition">
+                                <div class="col-sm-4">
+                                    <div class="row">
+                                        <span id="left-arrow" class="arrow-off">
+                                          <i class="fas fa-arrow-circle-left fa-7x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="row justify-content-center">
+                                        <p id="left-timer"></p>
+                                    </div>
                                 </div>
-                                <div class="row justify-content-center">
-                                    <p id="left-timer"></p>
+                                <div class="col-sm-4">
+                                    <div class="row justify-content-end">
+                                        <span id="right-arrow" class="arrow-off">
+                                          <i class="fas fa-arrow-circle-right fa-7x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="row justify-content-center">
+                                        <p id="right-timer"></p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-sm-4">
-                                <div class="row justify-content-end">
-                                    <span id="right-arrow" class="arrow-off">
-                                      <i class="fas fa-arrow-circle-right fa-7x"></i>
-                                    </span>
-                                </div>
-                                <div class="row justify-content-center">
-                                    <p id="right-timer"></p>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="float-right">
-                            <button id="stop-data-acquisition-button" type="button" class="btn btn-stop"
-                                    onclick="stopDataAcquisition()" disabled>
-                                <i class="fas fa-stop-circle"></i> Stop
-                            </button>
-                            <button id="start-data-acquisition-button" type="button" class="btn btn-primary"
-                                    onclick="sendStartDataAcquisitionMessage()">
-                                <i class="fas fa-play-circle"></i> Start
-                            </button>
+                            <div class="float-right">
+                                <button id="stop-data-acquisition-button" type="button" class="btn btn-stop"
+                                        onclick="stopDataAcquisition()" disabled>
+                                    <i class="fas fa-stop-circle"></i> Stop
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -168,6 +178,8 @@
         </div>
     </div>
 </div>
+
+<script src="/js/modal-helper.js"></script>
 <script src="/js/data-acquisition-layout-configuration.js"></script>
 <script src="/js/events-management.js"></script>
 <script src="/js/data-acquisition-management.js"></script>

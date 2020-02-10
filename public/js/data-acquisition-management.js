@@ -3,7 +3,6 @@ socket.on("DATA_ACQUISITION_STARTED", events => startDataAcquisition(events));
 socket.on("DATA_ACQUISITION_ENDED", () => dataAcquisitionEnded());
 
 function sendStartDataAcquisitionMessage() {
-    switchStartDataAcquisitionButton(false);
     switchStopDataAcquisitionButton(true);
     socket.emit("START_DATA_ACQUISITION");
 }
@@ -14,6 +13,7 @@ async function startDataAcquisition(events) {
         await executeEvents(events);
     }
 
+    closeModal("data-acquisition-modal");
     socket.emit("END_DATA_ACQUISITION");
 }
 
@@ -21,10 +21,6 @@ async function executeEvents(events) {
     for (const event of events) {
         await executeEvent(event);
     }
-}
-
-function switchStartDataAcquisitionButton(enabled) {
-    switchElement("start-data-acquisition-button", enabled);
 }
 
 function switchStopDataAcquisitionButton(enabled) {
@@ -95,7 +91,6 @@ function executeLeftOrRightEvent(event) {
 function dataAcquisitionEnded() {
     stopSignal = false;
     switchStopDataAcquisitionButton(false);
-    switchStartDataAcquisitionButton(true);
 }
 
 function stopDataAcquisition() {
