@@ -3,7 +3,6 @@ const fs = require("fs");
 const createArrayCsvWriter = require("csv-writer").createArrayCsvWriter;
 const array = require("lodash/array");
 
-// TODO VER PARA REMOVER A ÚLTIMA VIRGULA
 class EegCsvWriter {
     constructor(subject) {
         const date = moment().format("YYYY-MM-DD_HH-mm");

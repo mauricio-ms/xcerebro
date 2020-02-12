@@ -2,12 +2,7 @@ const lang = require("lodash/lang");
 const cyton = require("openbci").Cyton;
 
 const EegCsvWriter = require("./EegCsvWriter");
-
-const EventEnum = {
-    "REST": 0,
-    "LEFT": 1,
-    "RIGHT": 2
-};
+const EventType = require("./EventType");
 
 const board = new cyton({
     debug: false,
@@ -20,8 +15,7 @@ class StreamData {
      * @param timeExecution {int} Time to stream data in seconds
      * @param frequency {int} The frequency to stream data
      */
-    // TODO AJUSTAR PARA RECEBER O VALOR OU IMPORTAR A CONFIG
-    constructor(events, timeExecution, frequency = 250) {
+    constructor(events, timeExecution, frequency) {
         this._events = lang.clone(events);
         this._currentEvent = null;
         // TODO MELHORAR NOME
@@ -36,8 +30,6 @@ class StreamData {
         this._started = false;
         this._eegCsvWriter = null;
         this._socket = null;
-        // TODO - REMOVER
-        this._event = null;
     }
 
     async start(subject) {
@@ -56,11 +48,6 @@ class StreamData {
             const portName = "OpenBCISimulator";
             await board.connect(portName);
         }
-    }
-
-    // TODO - REMOVER
-    setCurrentEvent(event) {
-        this._event = event;
     }
 
     async _onReady() {
@@ -83,6 +70,7 @@ class StreamData {
             // TODO - TESTAR CASO DE DIRECTION LEFT OR RIGHT
             this._eegCsvWriter.appendSample(sample, this._currentEventDirection);
 
+            // TODO - View if necessary verify time
             if (this._isTimeExecutionRunOut(sample.boardTime)) {
                 this.stop();
             } else if (this._samplesCount % this.frequency === 0) {
@@ -102,7 +90,7 @@ class StreamData {
 
     _startNextEvent() {
         this._currentEvent = this._events.shift();
-        this._currentEventDirection = EventEnum[this._currentEvent.direction];
+        this._currentEventDirection = EventType[this._currentEvent.direction];
         this._socket.emit("SET_CURRENT_EVENT", this._currentEvent);
     }
 

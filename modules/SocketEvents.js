@@ -3,13 +3,6 @@ const StreamData = require("./StreamData");
 
 // TODO - TEST AUTO RELOAD
 
-// TODO - REMOVER ESSA ENUM
-const EventEnum = {
-  "REST": 0,
-  "LEFT": 1,
-  "RIGHT": 2
-};
-
 function configure(socket) {
     // Emit events to configure the window with server info
     socket.emit("EVENTS_ADDED", DataAcquisitionConfiguration.events);
@@ -46,17 +39,14 @@ function configure(socket) {
             return;
         }
         try {
-            streamData = new StreamData(DataAcquisitionConfiguration.events, DataAcquisitionConfiguration.getTimeExecution());
+            streamData = new StreamData(DataAcquisitionConfiguration.events,
+                DataAcquisitionConfiguration.getTimeExecution(), DataAcquisitionConfiguration.frequency);
             await streamData.start(DataAcquisitionConfiguration.subject);
         } catch (e) {
             socket.emit("ON_MESSAGE", e.message);
             socket.emit("DATA_ACQUISITION_ENDED");
         }
     });
-
-    // TODO - SETAR O PRIMEIRO EVENTO, remover esse evento daqui
-    socket.on("SET_CURRENT_EVENT", direction => streamData.setCurrentEvent(EventEnum[direction]));
-
     // TODO - Adjust to avoid open the data acquisition modal in validation errors
 
     socket.on("END_DATA_ACQUISITION", async () => await streamData.stop());
