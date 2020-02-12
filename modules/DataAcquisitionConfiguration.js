@@ -8,6 +8,7 @@ class DataAcquisitionConfiguration {
         this.loopTimes = 1;
         this.subject = 1;
         this.durationEvent = 10;
+        this.frequency = 250;
 
         while(events.length > 0) {
             const event = events.shift();
@@ -17,6 +18,8 @@ class DataAcquisitionConfiguration {
 
     addEvent(event) {
         event.id = String(this._eventsSequence++);
+        event.elapsedTime = 0;
+        event.samplesCount = this.frequency * event.duration;
         this.events.push(event);
     }
 

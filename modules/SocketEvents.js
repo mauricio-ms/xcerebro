@@ -1,6 +1,9 @@
 const DataAcquisitionConfiguration = require("./DataAcquisitionConfiguration");
 const StreamData = require("./StreamData");
 
+// TODO - TEST AUTO RELOAD
+
+// TODO - REMOVER ESSA ENUM
 const EventEnum = {
   "REST": 0,
   "LEFT": 1,
@@ -51,8 +54,10 @@ function configure(socket) {
         }
     });
 
-    // TODO - SETAR O PRIMEIRO EVENTO
+    // TODO - SETAR O PRIMEIRO EVENTO, remover esse evento daqui
     socket.on("SET_CURRENT_EVENT", direction => streamData.setCurrentEvent(EventEnum[direction]));
+
+    // TODO - Adjust to avoid open the data acquisition modal in validation errors
 
     socket.on("END_DATA_ACQUISITION", async () => await streamData.stop());
 }
