@@ -3,10 +3,8 @@ const cyton = require("openbci").Cyton;
 
 const EventType = require("./EventType");
 
-const board = new cyton({
-    debug: false,
-    verbose: false
-});
+const BOARD_PORT_NAME = "/dev/ttyUSB0";
+const SIMULATOR_PORT_NAME = "OpenBCISimulator";
 
 class StreamData {
     /**
@@ -16,9 +14,13 @@ class StreamData {
      * @param writer {object} Writer implementation to write the data streamed
      */
     constructor(events, timeExecution, frequency, writer) {
+        this._board = new cyton({
+            debug: false,
+            verbose: false
+        });
         this._socket = require("./Socket").getConnection();
         this._writer = writer;
-        this._events = lang.clone(events);
+        this._events = lang.cloneDeep(events);
         this._currentEvent = null;
         // TODO MELHORAR NOME
         this._currentEventDirection = null;
@@ -30,21 +32,31 @@ class StreamData {
         this._samplesCount = 0;
         this._maxSamplesCount = timeExecution * frequency;
         this._started = false;
+        this._configureCleanUp();
+    }
+
+    _configureCleanUp() {
+        // Do something when app is closing
+        process.on("exit", this._cleanUp);
+
+        // Catches ctrl+c event
+        process.on("SIGINT", this._cleanUp);
+
+        // Catches uncaught exceptions
+        process.on("uncaughtException", this._cleanUp);
     }
 
     async start() {
         console.log(`Starting to stream by ${this.timeExecution} seconds.`);
         await this._cleanUp();
-        board.on("ready", this._onReady.bind(this));
+        this._board.on("ready", this._onReady.bind(this));
 
         try {
-            const portName = "/dev/ttyUSB0";
-            await board.connect(portName);
+            await this._board.connect(BOARD_PORT_NAME);
         } catch (e) {
             console.log("Open BCI board not found. Connecting to Open BCI simulator.");
             this._simulationEnabled = true;
-            const portName = "OpenBCISimulator";
-            await board.connect(portName);
+            await this._board.connect(SIMULATOR_PORT_NAME);
         }
     }
 
@@ -55,7 +67,7 @@ class StreamData {
             await this._syncClocksFull();
         }
         // TODO - Handle times and loop parameters
-        board.on("sample", sample => {
+        this._board.on("sample", sample => {
             if (!this._started) {
                 console.log("PASSOU"); // todo fazer front ignorar se já tiver iniciado
                 this._started = true;
@@ -98,12 +110,12 @@ class StreamData {
 
     async _startStream() {
         try {
-            await board.syncRegisterSettings();
-            await board.streamStart();
+            await this._board.syncRegisterSettings();
+            await this._board.streamStart();
         } catch (err) {
             try {
                 console.log("Error starting the stream: ", err);
-                await board.streamStart();
+                await this._board.streamStart();
             } catch (err) {
                 console.log("Fatal error starting the stream data: ", err);
                 process.exit(0);
@@ -112,9 +124,9 @@ class StreamData {
     }
 
     async _syncClocksFull() {
-        const sync = await board.syncClocksFull();
+        const sync = await this._board.syncClocksFull();
         if (!sync.valid) {
-            await board.syncClocksFull();
+            await this._board.syncClocksFull();
         }
     }
 
@@ -129,34 +141,22 @@ class StreamData {
         this._socket.emit("ON_MESSAGE", "The CSV file was successfully saved.");
     }
 
+    // TODO - Clean writer
     async _cleanUp() {
-        await cleanUp();
+        this._board.removeAllListeners();
         this._startTime = null;
         this._simulationEnabled = false;
+
+        if (this._board.isStreaming()) {
+            console.log("Stopping streaming.");
+            await this._board.streamStop();
+        }
+
+        if (this._board.isConnected()) {
+            console.log("Disconnecting the Open BCI board.");
+            await this._board.disconnect();
+        }
     }
 }
-
-async function cleanUp() {
-    board.removeAllListeners();
-
-    if (board.isStreaming()) {
-        console.log("Stopping streaming.");
-        await board.streamStop();
-    }
-
-    if (board.isConnected()) {
-        console.log("Disconnecting the Open BCI board.");
-        await board.disconnect();
-    }
-}
-
-// Do something when app is closing
-process.on("exit", cleanUp);
-
-// Catches ctrl+c event
-process.on("SIGINT", cleanUp);
-
-// Catches uncaught exceptions
-process.on("uncaughtException", cleanUp);
 
 module.exports = StreamData;
