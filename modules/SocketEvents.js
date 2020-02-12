@@ -1,4 +1,5 @@
 const DataAcquisitionConfiguration = require("./DataAcquisitionConfiguration");
+const EegCsvWriter = require("./EegCsvWriter");
 const StreamData = require("./StreamData");
 
 // TODO - TEST AUTO RELOAD
@@ -39,9 +40,11 @@ function configure(socket) {
             return;
         }
         try {
-            streamData = new StreamData(DataAcquisitionConfiguration.events,
-                DataAcquisitionConfiguration.getTimeExecution(), DataAcquisitionConfiguration.frequency);
-            await streamData.start(DataAcquisitionConfiguration.subject);
+            const writer = new EegCsvWriter(DataAcquisitionConfiguration.subject);
+            streamData = new StreamData(DataAcquisitionConfiguration.events, DataAcquisitionConfiguration.getTimeExecution(),
+                DataAcquisitionConfiguration.frequency, writer);
+            socket.emit("OPEN_DATA_ACQUISITION_MODAL");
+            await streamData.start();
         } catch (e) {
             socket.emit("ON_MESSAGE", e.message);
             socket.emit("DATA_ACQUISITION_ENDED");

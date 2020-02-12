@@ -1,7 +1,6 @@
 const lang = require("lodash/lang");
 const cyton = require("openbci").Cyton;
 
-const EegCsvWriter = require("./EegCsvWriter");
 const EventType = require("./EventType");
 
 const board = new cyton({
@@ -14,8 +13,11 @@ class StreamData {
      * @param events {array} Events to stream, where each event has a direction and a duration
      * @param timeExecution {int} Time to stream data in seconds
      * @param frequency {int} The frequency to stream data
+     * @param writer {object} Writer implementation to write the data streamed
      */
-    constructor(events, timeExecution, frequency) {
+    constructor(events, timeExecution, frequency, writer) {
+        this._socket = require("./Socket").getConnection();
+        this._writer = writer;
         this._events = lang.clone(events);
         this._currentEvent = null;
         // TODO MELHORAR NOME
@@ -28,15 +30,11 @@ class StreamData {
         this._samplesCount = 0;
         this._maxSamplesCount = timeExecution * frequency;
         this._started = false;
-        this._eegCsvWriter = null;
-        this._socket = null;
     }
 
-    async start(subject) {
+    async start() {
         console.log(`Starting to stream by ${this.timeExecution} seconds.`);
         await this._cleanUp();
-        this._socket = require("./Socket").getConnection(); // TODO testar colocar no construtor
-        this._eegCsvWriter = new EegCsvWriter(subject);
         board.on("ready", this._onReady.bind(this));
 
         try {
@@ -56,19 +54,18 @@ class StreamData {
         if (!this._simulationEnabled) {
             await this._syncClocksFull();
         }
+        // TODO - Handle times and loop parameters
         board.on("sample", sample => {
             if (!this._started) {
                 console.log("PASSOU"); // todo fazer front ignorar se já tiver iniciado
                 this._started = true;
                 this._startTime = sample.boardTime;
                 this._startNextEvent();
-                // TODO - REMOVER esse evento
-                //this._socket.emit("DATA_ACQUISITION_STARTED", this._events);
             }
 
             this._samplesCount++;
             // TODO - TESTAR CASO DE DIRECTION LEFT OR RIGHT
-            this._eegCsvWriter.appendSample(sample, this._currentEventDirection);
+            this._writer.appendSample(sample, this._currentEventDirection);
 
             // TODO - View if necessary verify time
             if (this._isTimeExecutionRunOut(sample.boardTime)) {
@@ -128,7 +125,7 @@ class StreamData {
         this._started = false;
         await this._cleanUp();
         this._socket.emit("DATA_ACQUISITION_ENDED");
-        await this._eegCsvWriter.write(this._maxSamplesCount);
+        await this._writer.write(this._maxSamplesCount);
         this._socket.emit("ON_MESSAGE", "The CSV file was successfully saved.");
     }
 
