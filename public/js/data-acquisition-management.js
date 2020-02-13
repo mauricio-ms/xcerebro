@@ -1,9 +1,9 @@
-const EventDirectionEnum = {
+const EventByDirection = {
     1: "LEFT",
     2: "RIGHT"
 };
 
-const EventElementsEnum = {
+const ElementsByEvent = {
     "LEFT": {
         "arrow": document.getElementById("left-arrow"),
         "timer": document.getElementById("left-timer")
@@ -14,25 +14,45 @@ const EventElementsEnum = {
     }
 };
 
-// TODO - View stopSignal uses
-let stopSignal = false;
+function startDataAcquisition() {
+    _switchStopDataAcquisitionButton(true);
+    socket.emit("START_DATA_ACQUISITION");
+}
+
+function stopDataAcquisition() {
+    socket.emit("END_DATA_ACQUISITION");
+    _switchStopDataAcquisitionButton(false);
+}
+
 socket.on("OPEN_DATA_ACQUISITION_MODAL", () => openModal("data-acquisition-modal"));
-socket.on("DATA_ACQUISITION_ENDED", () => dataAcquisitionEnded());
+
+socket.on("DATA_ACQUISITION_ENDED", () => {
+    closeModal("data-acquisition-modal");
+    _switchStopDataAcquisitionButton(false);
+    const leftElements = ElementsByEvent["LEFT"];
+    const rightElements = ElementsByEvent["RIGHT"];
+    leftElements["arrow"].className = "arrow-off";
+    rightElements["arrow"].className = "arrow-off";
+    leftElements["timer"].textContent = "";
+    rightElements["timer"].textContent = "";
+});
+
 socket.on("SET_CURRENT_EVENT", event => {
     if (event.direction === "REST") {
         return;
     }
 
-    const direction = obtainCurrentEventDirection(event.direction);
-    const eventElements = EventElementsEnum[direction];
+    const direction = _obtainCurrentEventDirection(event.direction);
+    const eventElements = ElementsByEvent[direction];
     const arrow = eventElements["arrow"];
     arrow.className = "arrow-on";
     const timer = eventElements["timer"];
     timer.textContent = `${event.duration} s`;
 });
+
 socket.on("UPDATE_EVENT_TIMER", event => {
     // TODO - Ver para tratar o LEFT_OR_RIGHT aqui
-    const eventElements = EventElementsEnum[event.direction];
+    const eventElements = ElementsByEvent[event.direction];
     const timer = eventElements["timer"];
     const remainingTime = event.duration - event.elapsedTime;
     if (remainingTime === 0) {
@@ -43,35 +63,13 @@ socket.on("UPDATE_EVENT_TIMER", event => {
     }
 });
 
-function sendStartDataAcquisitionMessage() {
-    switchStopDataAcquisitionButton(true);
-    socket.emit("START_DATA_ACQUISITION");
-}
-
-function switchStopDataAcquisitionButton(enabled) {
-    switchElement("stop-data-acquisition-button", enabled);
-}
-
-function switchElement(idElement, enabled) {
-    const element = document.getElementById(idElement);
-    element.disabled = !enabled;
-}
-
-function obtainCurrentEventDirection(direction) {
+function _obtainCurrentEventDirection(direction) {
     if (direction === "LEFT_OR_RIGHT") {
-        return EventDirectionEnum[randomInt(1, 2)];
+        return EventByDirection[randomInt(1, 2)];
     }
     return direction;
 }
 
-function dataAcquisitionEnded() {
-    stopSignal = false;
-    switchStopDataAcquisitionButton(false);
-    closeModal("data-acquisition-modal");
-}
-
-function stopDataAcquisition() {
-    stopSignal = true;
-    socket.emit("END_DATA_ACQUISITION");
-    switchStopDataAcquisitionButton(false);
+function _switchStopDataAcquisitionButton(enabled) {
+    switchElement("stop-data-acquisition-button", enabled);
 }

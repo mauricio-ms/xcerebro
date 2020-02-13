@@ -33,6 +33,7 @@ function configure(socket) {
     socket.on("CONFIGURE_DURATION_EVENT", durationEvent => DataAcquisitionConfiguration.durationEvent = durationEvent);
 
     // TODO - CRIAR EVENTO PARA REALIZAR A CONFIGURAÇÃO DA AQUISIÇÃO DE DADOS
+    // TODO - CREATE MODAL CONFIRMATION BEFORE START STREAMING
     let streamData = null;
     socket.on("START_DATA_ACQUISITION", async () => {
         if (!validateToStartDataAcquisition(socket)) {
@@ -52,6 +53,7 @@ function configure(socket) {
     });
     // TODO - Adjust to avoid open the data acquisition modal in validation errors
 
+    // TODO - Should clear the window
     socket.on("END_DATA_ACQUISITION", async () => await streamData.stop());
 }
 

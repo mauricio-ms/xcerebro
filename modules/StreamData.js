@@ -35,6 +35,7 @@ class StreamData {
         this._configureCleanUp();
     }
 
+    // TODO - Adjust
     _configureCleanUp() {
         // Do something when app is closing
         process.on("exit", this._cleanUp);
