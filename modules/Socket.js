@@ -20,12 +20,12 @@ class Socket {
         });
     }
 
-    emit(event, data) {
-        this._socket.emit(event, data);
+    emit(eventName, args, ack) {
+        this._socket.emit(eventName, args, ack);
     }
 
-    on(event, handler) {
-        this._socket.on(event, handler);
+    on(eventName, callback) {
+        this._socket.on(eventName, callback);
     }
 
     static init(server) {

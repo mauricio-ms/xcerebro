@@ -15,7 +15,6 @@ const ElementsByEvent = {
 };
 
 function startDataAcquisition() {
-    _switchStopDataAcquisitionButton(true);
     socket.emit("START_DATA_ACQUISITION");
 }
 
@@ -25,6 +24,16 @@ function stopDataAcquisition() {
 }
 
 socket.on("OPEN_DATA_ACQUISITION_MODAL", () => openModal("data-acquisition-modal"));
+
+socket.on("IS_READY_TO_START_DATA_ACQUISITION", (message, onConfirmationFn) => {
+    const confirmed = confirm(message);
+    if (confirmed) {
+        _switchStopDataAcquisitionButton(true);
+    } else {
+        closeModal("data-acquisition-modal");
+    }
+    onConfirmationFn(confirmed);
+});
 
 socket.on("DATA_ACQUISITION_ENDED", () => {
     closeModal("data-acquisition-modal");

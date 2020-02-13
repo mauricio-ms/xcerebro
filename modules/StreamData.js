@@ -67,7 +67,38 @@ class StreamData {
         if (!this._simulationEnabled) {
             await this._syncClocksFull();
         }
+
         // TODO - Handle times and loop parameters
+        this._socket.emit("IS_READY_TO_START_DATA_ACQUISITION", "Are you ready?", this._startDataAcquisition.bind(this))
+    }
+
+    async _startStream() {
+        try {
+            await this._board.syncRegisterSettings();
+            await this._board.streamStart();
+        } catch (err) {
+            try {
+                console.log("Error starting the stream: ", err);
+                await this._board.streamStart();
+            } catch (err) {
+                console.log("Fatal error starting the stream data: ", err);
+                process.exit(0);
+            }
+        }
+    }
+
+    async _syncClocksFull() {
+        const sync = await this._board.syncClocksFull();
+        if (!sync.valid) {
+            await this._board.syncClocksFull();
+        }
+    }
+
+    _startDataAcquisition(permitted) {
+        if (!permitted) {
+            this.stop();
+            return;
+        }
         this._board.on("sample", sample => {
             if (!this._started) {
                 console.log("PASSOU"); // todo fazer front ignorar se já tiver iniciado
@@ -107,28 +138,6 @@ class StreamData {
     _isTimeExecutionRunOut(lastTimestamp) {
         const elapsedTime = lastTimestamp-this._startTime;
         return elapsedTime >= this._timeExecutionMillis;
-    }
-
-    async _startStream() {
-        try {
-            await this._board.syncRegisterSettings();
-            await this._board.streamStart();
-        } catch (err) {
-            try {
-                console.log("Error starting the stream: ", err);
-                await this._board.streamStart();
-            } catch (err) {
-                console.log("Fatal error starting the stream data: ", err);
-                process.exit(0);
-            }
-        }
-    }
-
-    async _syncClocksFull() {
-        const sync = await this._board.syncClocksFull();
-        if (!sync.valid) {
-            await this._board.syncClocksFull();
-        }
     }
 
     async stop() {
