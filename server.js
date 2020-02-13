@@ -4,8 +4,11 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const http = require("http");
 
+const ExceptionHandler = require("./modules/ExceptionHandler");
 const index = require("./routes/index");
 const Socket = require("./modules/Socket");
+
+ExceptionHandler.setUp();
 
 const app = express();
 app.use(morgan("dev"));

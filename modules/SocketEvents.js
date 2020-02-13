@@ -1,6 +1,7 @@
 const DataAcquisitionConfiguration = require("./DataAcquisitionConfiguration");
 const EegCsvWriter = require("./EegCsvWriter");
 const StreamData = require("./StreamData");
+const ExceptionHandler = require("./ExceptionHandler");
 
 function configure(socket) {
     // Emit events to configure the window with server info
@@ -41,6 +42,7 @@ function configure(socket) {
             streamData = new StreamData(DataAcquisitionConfiguration.events, DataAcquisitionConfiguration.loop,
                 DataAcquisitionConfiguration.loopTimes, DataAcquisitionConfiguration.getTimeExecution(),
                 DataAcquisitionConfiguration.frequency, writer);
+            ExceptionHandler.addHandler("cleanUp", streamData.cleanUp.bind(streamData));
             socket.emit("OPEN_DATA_ACQUISITION_MODAL");
             await streamData.start();
         } catch (e) {

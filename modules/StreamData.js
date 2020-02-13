@@ -37,24 +37,11 @@ class StreamData {
         this._frequency = frequency;
         this._samplesCount = 0;
         this._maxSamplesCount = !loop ? executionTime * frequency * loopTimes : 0;
-        this._configureCleanUp();
-    }
-
-    // TODO - Adjust
-    _configureCleanUp() {
-        // Do something when app is closing
-        process.on("exit", this._cleanUp);
-
-        // Catches ctrl+c event
-        process.on("SIGINT", this._cleanUp);
-
-        // Catches uncaught exceptions
-        process.on("uncaughtException", this._cleanUp);
     }
 
     async start() {
         console.log(`Starting to stream by ${this._executionTime} seconds.`);
-        await this._cleanUp();
+        await this.cleanUp();
         this._board.on("ready", this._onReady.bind(this));
 
         try {
@@ -160,13 +147,14 @@ class StreamData {
             return;
         }
         this._started = false;
-        await this._cleanUp();
+        await this.cleanUp();
         this._socket.emit("DATA_ACQUISITION_ENDED");
         await this._writer.write(this._maxSamplesCount);
         this._socket.emit("ON_MESSAGE", "The CSV file was successfully saved.");
     }
 
-    async _cleanUp() {
+    async cleanUp() {
+        console.log("Cleaning the stream resources")
         this._board.removeAllListeners();
         this._startTime = null;
         this._simulationEnabled = false;
