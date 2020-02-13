@@ -10,12 +10,13 @@ const SIMULATOR_PORT_NAME = "OpenBCISimulator";
 class StreamData {
     /**
      * @param events {array} Events to stream, where each event has a direction and a duration
-     * @param loopTimes {int} Quantity to repeat the events before end stream
+     * @param loop {boolean} Boolean to define if stream infinitely
+     * @param loopTimes {int} Quantity to repeat the events before end stream, only used when loop=false
      * @param executionTime {int} Time to stream data in seconds
      * @param frequency {int} The frequency to stream data
      * @param writer {object} Writer implementation to write the data streamed
      */
-    constructor(events, loopTimes, executionTime, frequency, writer) {
+    constructor(events, loop, loopTimes, executionTime, frequency, writer) {
         this._board = new cyton({
             debug: false,
             verbose: false
@@ -26,6 +27,7 @@ class StreamData {
         this._events = lang.cloneDeep(events);
         this._currentEvent = null;
         this._currentLabel = null;
+        this._loop = loop;
         this._loopTimes = loopTimes;
         this._executionTime = executionTime;
         this._executionTimeMillis = executionTime * (1000 - 1) * loopTimes;
@@ -34,7 +36,7 @@ class StreamData {
         this._simulationEnabled = false;
         this._frequency = frequency;
         this._samplesCount = 0;
-        this._maxSamplesCount = executionTime * frequency * loopTimes;
+        this._maxSamplesCount = !loop ? executionTime * frequency * loopTimes : 0;
         this._configureCleanUp();
     }
 
@@ -71,7 +73,6 @@ class StreamData {
             await this._syncClocksFull();
         }
 
-        // TODO - Handle loop parameter
         this._socket.emit("IS_READY_TO_START_DATA_ACQUISITION", "Are you ready?", this._startDataAcquisition.bind(this))
     }
 
@@ -113,7 +114,7 @@ class StreamData {
             this._writer.appendSample(sample, this._currentLabel);
 
             // TODO - View if necessary verify time
-            if (this._isExecutionTimeRunOut(sample.boardTime)) {
+            if (!this._loop && this._isExecutionTimeRunOut(sample.boardTime)) {
                 this.stop();
             } else if (this._samplesCount % this._frequency === 0) {
                 this._currentEvent.elapsedTime++;
@@ -121,8 +122,7 @@ class StreamData {
                 const remainingTime = this._currentEvent.duration - this._currentEvent.elapsedTime;
                 if (remainingTime === 0) {
                     if (this._events.length === 0) {
-                        this._loopTimes--;
-                        if (this._loopTimes > 0) {
+                        if (this._loop || --this._loopTimes > 0) {
                             this._events = lang.cloneDeep(this._originalEvents);
                             this._startNextEvent();
                         } else {

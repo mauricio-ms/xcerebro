@@ -30,13 +30,14 @@ class EegCsvWriter {
     }
 
     getRecords(quantityRecords) {
-        if (this._records.length < quantityRecords) {
+        if (quantityRecords === 0 || quantityRecords === this._records.length) {
+            return this._records;
+        } else if (quantityRecords > this._records.length) {
             console.warn(`The records that will be write is less than ${quantityRecords}`);
-        } else if (this._records.length > quantityRecords) {
+            return this._records;
+        } else {
             return this._records.splice(0, quantityRecords);
         }
-
-        return this._records;
     }
 }
 
