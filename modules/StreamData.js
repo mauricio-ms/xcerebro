@@ -2,6 +2,7 @@ const lang = require("lodash/lang");
 const cyton = require("openbci").Cyton;
 
 const EventType = require("./EventType");
+const Random = require("./Random");
 
 const BOARD_PORT_NAME = "/dev/ttyUSB0";
 const SIMULATOR_PORT_NAME = "OpenBCISimulator";
@@ -22,8 +23,7 @@ class StreamData {
         this._writer = writer;
         this._events = lang.cloneDeep(events);
         this._currentEvent = null;
-        // TODO MELHORAR NOME
-        this._currentEventDirection = null;
+        this._currentLabel = null;
         this.timeExecution = timeExecution;
         this._timeExecutionMillis = timeExecution * 1000 - 1;
         this._startTime = null;
@@ -109,7 +109,7 @@ class StreamData {
 
             this._samplesCount++;
             // TODO - TESTAR CASO DE DIRECTION LEFT OR RIGHT
-            this._writer.appendSample(sample, this._currentEventDirection);
+            this._writer.appendSample(sample, this._currentLabel);
 
             // TODO - View if necessary verify time
             if (this._isTimeExecutionRunOut(sample.boardTime)) {
@@ -131,8 +131,16 @@ class StreamData {
 
     _startNextEvent() {
         this._currentEvent = this._events.shift();
-        this._currentEventDirection = EventType[this._currentEvent.direction];
+        this._currentEvent.direction = this._obtainEventDirection(this._currentEvent);
+        this._currentLabel = EventType.getId(this._currentEvent.direction);
         this._socket.emit("SET_CURRENT_EVENT", this._currentEvent);
+    }
+
+    _obtainEventDirection(event) {
+        if (event.direction === "LEFT_OR_RIGHT") {
+            return EventType.getDescription(Random.randomInt(1, 2));
+        }
+        return event.direction;
     }
 
     _isTimeExecutionRunOut(lastTimestamp) {

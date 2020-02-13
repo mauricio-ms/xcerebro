@@ -24,8 +24,8 @@ class DataAcquisitionConfiguration {
     }
 
     deleteEvent(eventId) {
-        const eventIndex = array.findIndex(DataAcquisitionConfiguration.events, event => event.id === eventId);
-        DataAcquisitionConfiguration.events.splice(eventIndex, 1);
+        const eventIndex = array.findIndex(this.events, event => event.id === eventId);
+        this.events.splice(eventIndex, 1);
     }
 
     getTimeExecution() {

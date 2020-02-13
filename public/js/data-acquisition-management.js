@@ -1,8 +1,3 @@
-const EventByDirection = {
-    1: "LEFT",
-    2: "RIGHT"
-};
-
 const ElementsByEvent = {
     "LEFT": {
         "arrow": document.getElementById("left-arrow"),
@@ -51,8 +46,7 @@ socket.on("SET_CURRENT_EVENT", event => {
         return;
     }
 
-    const direction = _obtainCurrentEventDirection(event.direction);
-    const eventElements = ElementsByEvent[direction];
+    const eventElements = ElementsByEvent[event.direction];
     const arrow = eventElements["arrow"];
     arrow.className = "arrow-on";
     const timer = eventElements["timer"];
@@ -60,7 +54,6 @@ socket.on("SET_CURRENT_EVENT", event => {
 });
 
 socket.on("UPDATE_EVENT_TIMER", event => {
-    // TODO - Ver para tratar o LEFT_OR_RIGHT aqui
     const eventElements = ElementsByEvent[event.direction];
     const timer = eventElements["timer"];
     const remainingTime = event.duration - event.elapsedTime;
@@ -71,13 +64,6 @@ socket.on("UPDATE_EVENT_TIMER", event => {
         timer.textContent = `${remainingTime} s`;
     }
 });
-
-function _obtainCurrentEventDirection(direction) {
-    if (direction === "LEFT_OR_RIGHT") {
-        return EventByDirection[randomInt(1, 2)];
-    }
-    return direction;
-}
 
 function _switchStopDataAcquisitionButton(enabled) {
     switchElement("stop-data-acquisition-button", enabled);
