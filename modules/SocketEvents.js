@@ -38,8 +38,8 @@ function configure(socket) {
         }
         try {
             const writer = new EegCsvWriter(DataAcquisitionConfiguration.subject);
-            streamData = new StreamData(DataAcquisitionConfiguration.events, DataAcquisitionConfiguration.getTimeExecution(),
-                DataAcquisitionConfiguration.frequency, writer);
+            streamData = new StreamData(DataAcquisitionConfiguration.events, DataAcquisitionConfiguration.loopTimes,
+                DataAcquisitionConfiguration.getTimeExecution(), DataAcquisitionConfiguration.frequency, writer);
             socket.emit("OPEN_DATA_ACQUISITION_MODAL");
             await streamData.start();
         } catch (e) {

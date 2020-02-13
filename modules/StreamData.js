@@ -10,28 +10,31 @@ const SIMULATOR_PORT_NAME = "OpenBCISimulator";
 class StreamData {
     /**
      * @param events {array} Events to stream, where each event has a direction and a duration
-     * @param timeExecution {int} Time to stream data in seconds
+     * @param loopTimes {int} Quantity to repeat the events before end stream
+     * @param executionTime {int} Time to stream data in seconds
      * @param frequency {int} The frequency to stream data
      * @param writer {object} Writer implementation to write the data streamed
      */
-    constructor(events, timeExecution, frequency, writer) {
+    constructor(events, loopTimes, executionTime, frequency, writer) {
         this._board = new cyton({
             debug: false,
             verbose: false
         });
         this._socket = require("./Socket").getConnection();
         this._writer = writer;
+        this._originalEvents = events;
         this._events = lang.cloneDeep(events);
         this._currentEvent = null;
         this._currentLabel = null;
-        this.timeExecution = timeExecution;
-        this._timeExecutionMillis = timeExecution * 1000 - 1;
+        this._loopTimes = loopTimes;
+        this._executionTime = executionTime;
+        this._executionTimeMillis = executionTime * (1000 - 1) * loopTimes;
+        this._started = false;
         this._startTime = null;
         this._simulationEnabled = false;
-        this.frequency = frequency;
+        this._frequency = frequency;
         this._samplesCount = 0;
-        this._maxSamplesCount = timeExecution * frequency;
-        this._started = false;
+        this._maxSamplesCount = executionTime * frequency * loopTimes;
         this._configureCleanUp();
     }
 
@@ -48,7 +51,7 @@ class StreamData {
     }
 
     async start() {
-        console.log(`Starting to stream by ${this.timeExecution} seconds.`);
+        console.log(`Starting to stream by ${this._executionTime} seconds.`);
         await this._cleanUp();
         this._board.on("ready", this._onReady.bind(this));
 
@@ -68,7 +71,7 @@ class StreamData {
             await this._syncClocksFull();
         }
 
-        // TODO - Handle times and loop parameters
+        // TODO - Handle loop parameter
         this._socket.emit("IS_READY_TO_START_DATA_ACQUISITION", "Are you ready?", this._startDataAcquisition.bind(this))
     }
 
@@ -110,15 +113,21 @@ class StreamData {
             this._writer.appendSample(sample, this._currentLabel);
 
             // TODO - View if necessary verify time
-            if (this._isTimeExecutionRunOut(sample.boardTime)) {
+            if (this._isExecutionTimeRunOut(sample.boardTime)) {
                 this.stop();
-            } else if (this._samplesCount % this.frequency === 0) {
+            } else if (this._samplesCount % this._frequency === 0) {
                 this._currentEvent.elapsedTime++;
                 this._socket.emit("UPDATE_EVENT_TIMER", this._currentEvent);
                 const remainingTime = this._currentEvent.duration - this._currentEvent.elapsedTime;
                 if (remainingTime === 0) {
                     if (this._events.length === 0) {
-                        this.stop();
+                        this._loopTimes--;
+                        if (this._loopTimes > 0) {
+                            this._events = lang.cloneDeep(this._originalEvents);
+                            this._startNextEvent();
+                        } else {
+                            this.stop();
+                        }
                     } else {
                         this._startNextEvent();
                     }
@@ -141,9 +150,9 @@ class StreamData {
         return event.direction;
     }
 
-    _isTimeExecutionRunOut(lastTimestamp) {
+    _isExecutionTimeRunOut(lastTimestamp) {
         const elapsedTime = lastTimestamp-this._startTime;
-        return elapsedTime >= this._timeExecutionMillis;
+        return elapsedTime >= this._executionTimeMillis;
     }
 
     async stop() {
