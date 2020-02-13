@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "devstart": "nodemon ./bin/www",
-    "serverstart": "DEBUG=express-locallibrary-tutorial:* npm run devstart"
+    "start": "node server.js",
+    "devstart": "nodemon server.js"
   },
   "dependencies": {
     "@openbci/cyton": "^2.0.1",

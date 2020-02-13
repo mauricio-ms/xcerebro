@@ -2,8 +2,6 @@ const DataAcquisitionConfiguration = require("./DataAcquisitionConfiguration");
 const EegCsvWriter = require("./EegCsvWriter");
 const StreamData = require("./StreamData");
 
-// TODO - TEST AUTO RELOAD
-
 function configure(socket) {
     // Emit events to configure the window with server info
     socket.emit("EVENTS_ADDED", DataAcquisitionConfiguration.events);
