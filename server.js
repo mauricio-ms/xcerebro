@@ -20,5 +20,13 @@ Socket.connect(server)
 
 const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`Server running on port: ${port}`));
+server.on("error", async error => {
+    if (error.code === "EADDRINUSE") {
+        console.log("Port already in use, killing the process.");
+        const killPort = require("kill-port");
+        await killPort(port, "tcp");
+        server.listen(port, () => console.log(`Server running on port: ${port}`));
+    }
+});
 
 module.exports = server;
