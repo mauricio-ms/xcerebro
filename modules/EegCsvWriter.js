@@ -25,6 +25,7 @@ class EegCsvWriter {
 
     async write(quantityRecords) {
         await this._csvWriter.writeRecords(this.getRecords(quantityRecords));
+        this._records = [];
         console.log("The CSV file was successfully saved on path: " + this.path);
     }
 

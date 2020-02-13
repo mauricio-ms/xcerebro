@@ -101,14 +101,12 @@ class StreamData {
         }
         this._board.on("sample", sample => {
             if (!this._started) {
-                console.log("PASSOU"); // todo fazer front ignorar se já tiver iniciado
                 this._started = true;
                 this._startTime = sample.boardTime;
                 this._startNextEvent();
             }
 
             this._samplesCount++;
-            // TODO - TESTAR CASO DE DIRECTION LEFT OR RIGHT
             this._writer.appendSample(sample, this._currentLabel);
 
             // TODO - View if necessary verify time
@@ -159,7 +157,6 @@ class StreamData {
         this._socket.emit("ON_MESSAGE", "The CSV file was successfully saved.");
     }
 
-    // TODO - Clean writer
     async _cleanUp() {
         this._board.removeAllListeners();
         this._startTime = null;
