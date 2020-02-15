@@ -30,9 +30,7 @@ class StreamData {
         this._loop = loop;
         this._loopTimes = loopTimes;
         this._executionTime = executionTime;
-        this._executionTimeMillis = executionTime * (1000 - 1) * loopTimes;
         this._started = false;
-        this._startTime = null;
         this._simulationEnabled = false;
         this._frequency = frequency;
         this._samplesCount = 0;
@@ -93,17 +91,13 @@ class StreamData {
         this._board.on("sample", sample => {
             if (!this._started) {
                 this._started = true;
-                this._startTime = sample.boardTime;
                 this._startNextEvent();
             }
 
             this._samplesCount++;
             this._writer.appendSample(sample, this._currentLabel);
 
-            // TODO - View if necessary verify time
-            if (!this._loop && this._isExecutionTimeRunOut(sample.boardTime)) {
-                this.stop();
-            } else if (this._samplesCount % this._frequency === 0) {
+            if (this._samplesCount % this._frequency === 0) {
                 this._currentEvent.elapsedTime++;
                 this._socket.emit("UPDATE_EVENT_TIMER", this._currentEvent);
                 const remainingTime = this._currentEvent.duration - this._currentEvent.elapsedTime;
@@ -137,11 +131,6 @@ class StreamData {
         return event.direction;
     }
 
-    _isExecutionTimeRunOut(lastTimestamp) {
-        const elapsedTime = lastTimestamp-this._startTime;
-        return elapsedTime >= this._executionTimeMillis;
-    }
-
     async stop() {
         if (!this._started) {
             return;
@@ -156,7 +145,6 @@ class StreamData {
     async cleanUp() {
         console.log("Cleaning the stream resources")
         this._board.removeAllListeners();
-        this._startTime = null;
         this._simulationEnabled = false;
 
         if (this._board.isStreaming()) {

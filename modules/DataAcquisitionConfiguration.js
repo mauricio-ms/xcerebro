@@ -37,12 +37,12 @@ class DataAcquisitionConfiguration {
 
 const preconfiguredEvents = [
     {
-        direction: "LEFT",
+        direction: "REST",
         duration: 2
     },
     {
-        direction: "RIGHT",
-        duration: 2
+        direction: "LEFT_OR_RIGHT",
+        duration: 4
     }
 ];
 module.exports = new DataAcquisitionConfiguration(preconfiguredEvents);

@@ -10,6 +10,7 @@ function addHandler(handlerName, handler) {
 async function executeHandlers() {
     for (let handlerName of Object.keys(handlers)) {
         await handlers[handlerName]();
+        delete handlers[handlerName];
     }
 }
 
