@@ -1,11 +1,9 @@
 const ElementsByEvent = {
     "LEFT": {
-        "arrow": document.getElementById("left-arrow"),
-        "timer": document.getElementById("left-timer")
+        "arrow": document.getElementById("left-arrow")
     },
     "RIGHT": {
-        "arrow": document.getElementById("right-arrow"),
-        "timer": document.getElementById("right-timer")
+        "arrow": document.getElementById("right-arrow")
     }
 };
 
@@ -37,8 +35,6 @@ socket.on("DATA_ACQUISITION_ENDED", () => {
     const rightElements = ElementsByEvent["RIGHT"];
     leftElements["arrow"].className = "arrow-off";
     rightElements["arrow"].className = "arrow-off";
-    leftElements["timer"].textContent = "";
-    rightElements["timer"].textContent = "";
 });
 
 socket.on("SET_CURRENT_EVENT", event => {
@@ -49,20 +45,13 @@ socket.on("SET_CURRENT_EVENT", event => {
     const eventElements = ElementsByEvent[event.direction];
     const arrow = eventElements["arrow"];
     arrow.className = "arrow-on";
-    const timer = eventElements["timer"];
-    timer.textContent = `${event.duration} s`;
 });
 
-socket.on("UPDATE_EVENT_TIMER", event => {
-    const eventElements = ElementsByEvent[event.direction];
-    const timer = eventElements["timer"];
-    const remainingTime = event.duration - event.elapsedTime;
-    if (remainingTime === 0) {
-        timer.textContent = "";
-        eventElements["arrow"].className = "arrow-off";
-    } else {
-        timer.textContent = `${remainingTime} s`;
+socket.on("END_EVENT", event => {
+    if (event.direction === "REST") {
+        return;
     }
+    ElementsByEvent[event.direction]["arrow"].className = "arrow-off"
 });
 
 function _switchStopDataAcquisitionButton(enabled) {

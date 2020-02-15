@@ -99,9 +99,9 @@ class StreamData {
 
             if (this._samplesCount % this._frequency === 0) {
                 this._currentEvent.elapsedTime++;
-                this._socket.emit("UPDATE_EVENT_TIMER", this._currentEvent);
                 const remainingTime = this._currentEvent.duration - this._currentEvent.elapsedTime;
                 if (remainingTime === 0) {
+                    this._socket.emit("END_EVENT", this._currentEvent);
                     if (this._events.length === 0) {
                         if (this._loop || --this._loopTimes > 0) {
                             this._events = lang.cloneDeep(this._originalEvents);
