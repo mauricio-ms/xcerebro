@@ -1,4 +1,5 @@
 const lang = require("lodash/lang");
+const collection = require("lodash/collection");
 const cyton = require("openbci").Cyton;
 
 const EventType = require("./EventType");
@@ -29,12 +30,35 @@ class StreamData {
         this._currentLabel = null;
         this._loop = loop;
         this._loopTimes = loopTimes;
+        this._randomDirections = !loop ? this._generateRandomDirections() : null;
         this._executionTime = executionTime;
         this._started = false;
         this._simulationEnabled = false;
         this._frequency = frequency;
         this._samplesCount = 0;
         this._maxSamplesCount = !loop ? executionTime * frequency * loopTimes : 0;
+    }
+
+    _generateRandomDirections() {
+        const randomEventsLength = this._loopTimes * this._originalEvents
+            .filter(event => event.direction === "LEFT_OR_RIGHT")
+            .length;
+
+        const singleEventsLength = Math.floor(randomEventsLength / 2);
+        const eventsLength = {
+            "LEFT": singleEventsLength,
+            "RIGHT": singleEventsLength
+        };
+        // If the events is odd, increment randomly to one of the two classes
+        if (randomEventsLength % 2 !== 0) {
+            eventsLength[EventType.getDescription(Random.randomInt(1, 2))]++;
+        }
+
+        const leftEvents = new Array(eventsLength["LEFT"])
+            .fill(EventType.getId("LEFT"));
+        const rightEvents = new Array(eventsLength["RIGHT"])
+            .fill(EventType.getId("RIGHT"));
+        return collection.shuffle(leftEvents.concat(rightEvents));
     }
 
     async start() {
@@ -126,7 +150,7 @@ class StreamData {
 
     _obtainEventDirection(event) {
         if (event.direction === "LEFT_OR_RIGHT") {
-            return EventType.getDescription(Random.randomInt(1, 2));
+            return EventType.getDescription(this._randomDirections.shift());
         }
         return event.direction;
     }
