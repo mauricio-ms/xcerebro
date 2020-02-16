@@ -100,8 +100,10 @@ class StreamData {
         if (!this._simulationEnabled) {
             await this._syncClocksFull();
         }
-
-        this._socket.emit("IS_READY_TO_START_DATA_ACQUISITION", "Are you ready?", this._startDataAcquisition.bind(this))
+        const connectionStatusText = this._simulationEnabled ?
+            "Connected to the simulation mode."
+            : "Connected to the Open BCI board.";
+        this._socket.emit("IS_READY_TO_START_DATA_ACQUISITION", connectionStatusText, this._startDataAcquisition.bind(this))
     }
 
     async _startStream() {
@@ -114,7 +116,7 @@ class StreamData {
                 await this._board.streamStart();
             } catch (err) {
                 console.log("Fatal error starting the stream data: ", err);
-                process.exit(0);
+                await this.stop();
             }
         }
     }
@@ -210,7 +212,7 @@ class StreamData {
     }
 
     async cleanUp() {
-        console.log("Cleaning the stream resources")
+        console.log("Cleaning the stream resources");
         this._board.removeAllListeners();
         this._simulationEnabled = false;
 

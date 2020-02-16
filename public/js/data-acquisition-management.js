@@ -6,6 +6,7 @@ const ElementsByEvent = {
         "arrow": document.getElementById("right-arrow")
     }
 };
+const connectionStatusTextElement = document.getElementById("connection-status-text");
 
 function startDataAcquisition() {
     socket.emit("START_DATA_ACQUISITION");
@@ -18,17 +19,22 @@ function stopDataAcquisition() {
 
 socket.on("OPEN_DATA_ACQUISITION_MODAL", () => openModal("data-acquisition-modal"));
 
-socket.on("IS_READY_TO_START_DATA_ACQUISITION", (message, onConfirmationFn) => {
-    const confirmed = confirm(message);
-    if (confirmed) {
-        _switchStopDataAcquisitionButton(true);
-    } else {
-        closeModal("data-acquisition-modal");
-    }
-    onConfirmationFn(confirmed);
+socket.on("IS_READY_TO_START_DATA_ACQUISITION", (connectionStatusText, onConfirmationFn) => {
+    connectionStatusTextElement.textContent = connectionStatusText;
+    setTimeout(() => {
+        const confirmed = confirm("Are you ready?");
+        if (confirmed) {
+            _switchStopDataAcquisitionButton(true);
+        } else {
+            socket.emit("CLEAN_UP_DATA_ACQUISITION_RESOURCES");
+            _switchStopDataAcquisitionButton(false);
+        }
+        onConfirmationFn(confirmed);
+    }, 20);
 });
 
 socket.on("DATA_ACQUISITION_ENDED", () => {
+    connectionStatusTextElement.textContent = "";
     closeModal("data-acquisition-modal");
     _switchStopDataAcquisitionButton(false);
     const leftElements = ElementsByEvent["LEFT"];

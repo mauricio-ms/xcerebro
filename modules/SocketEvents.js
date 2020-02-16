@@ -58,6 +58,10 @@ function configure(socket) {
     });
 
     socket.on("END_DATA_ACQUISITION", async () => await streamData.stop());
+    socket.on("CLEAN_UP_DATA_ACQUISITION_RESOURCES", async () => {
+        await streamData.cleanUp();
+        socket.emit("DATA_ACQUISITION_ENDED");
+    });
 }
 
 function validateToStartDataAcquisition(socket) {
