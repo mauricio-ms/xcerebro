@@ -7,7 +7,10 @@ class DataAcquisitionConfiguration {
         this.loop = false;
         this.loopTimes = 1;
         this.subject = 1;
-        this.durationEvent = 10;
+        this.durationEvent = {
+            start: null,
+            end: null
+        };
         this.frequency = 250;
 
         while(events.length > 0) {
@@ -18,8 +21,6 @@ class DataAcquisitionConfiguration {
 
     addEvent(event) {
         event.id = String(this._eventsSequence++);
-        event.elapsedTime = 0;
-        event.samplesCount = this.frequency * event.duration;
         this.events.push(event);
     }
 
@@ -27,22 +28,21 @@ class DataAcquisitionConfiguration {
         const eventIndex = array.findIndex(this.events, event => event.id === eventId);
         this.events.splice(eventIndex, 1);
     }
-
-    getTimeExecution() {
-        return this.events
-            .map(e => e.duration)
-            .reduce((x, y) => x + y);
-    }
 }
 
 const preconfiguredEvents = [
     {
         direction: "REST",
-        duration: 2
+        duration: {
+            start: 1.75,
+            end: 2.25
+        }
     },
     {
         direction: "LEFT_OR_RIGHT",
-        duration: 4
+        duration: {
+            start: 4
+        }
     }
 ];
 module.exports = new DataAcquisitionConfiguration(preconfiguredEvents);

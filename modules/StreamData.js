@@ -1,5 +1,6 @@
 const lang = require("lodash/lang");
 const collection = require("lodash/collection");
+const math = require("lodash/math");
 const cyton = require("openbci").Cyton;
 
 const EventType = require("./EventType");
@@ -13,11 +14,10 @@ class StreamData {
      * @param events {array} Events to stream, where each event has a direction and a duration
      * @param loop {boolean} Boolean to define if stream infinitely
      * @param loopTimes {int} Quantity to repeat the events before end stream, only used when loop=false
-     * @param executionTime {int} Time to stream data in seconds
      * @param frequency {int} The frequency to stream data
      * @param writer {object} Writer implementation to write the data streamed
      */
-    constructor(events, loop, loopTimes, executionTime, frequency, writer) {
+    constructor(events, loop, loopTimes, frequency, writer) {
         this._board = new cyton({
             debug: false,
             verbose: false
@@ -30,13 +30,17 @@ class StreamData {
         this._currentLabel = null;
         this._loop = loop;
         this._loopTimes = loopTimes;
-        this._randomDirections = !loop ? this._generateRandomDirections() : null;
-        this._executionTime = executionTime;
+        this._randomDirections = this._generateRandomDirections();
+        this._executionTimes = this._generateExecutionTimes();
+        this._executionTime = math.sum(this._executionTimes);
         this._started = false;
         this._simulationEnabled = false;
         this._frequency = frequency;
         this._samplesCount = 0;
-        this._maxSamplesCount = !loop ? executionTime * frequency * loopTimes : 0;
+        this._remainingSamples = 0;
+        this._maxSamplesCount = !this._loop ?
+            Math.round(this._executionTime * this._frequency)
+            : 0;
     }
 
     _generateRandomDirections() {
@@ -59,6 +63,21 @@ class StreamData {
         const rightEvents = new Array(eventsLength["RIGHT"])
             .fill(EventType.getId("RIGHT"));
         return collection.shuffle(leftEvents.concat(rightEvents));
+    }
+
+    _generateExecutionTimes() {
+        let executionsTime = [];
+        for (let i=0; i<this._loopTimes; i++) {
+            executionsTime = executionsTime.concat(this._originalEvents
+                .map(event => {
+                    if (event.duration.end) {
+                        return Random.random(event.duration.start, event.duration.end);
+                    }
+                    return event.duration.start;
+                }));
+        }
+
+        return executionsTime;
     }
 
     async start() {
@@ -121,29 +140,47 @@ class StreamData {
             this._samplesCount++;
             this._writer.appendSample(sample, this._currentLabel);
 
-            if (this._samplesCount % this._frequency === 0) {
+            if (this._remainingSamples) {
+                this._remainingSamples--;
+                if (this._remainingSamples === 0) {
+                    this._setUpNextRound();
+                }
+            } else if (this._samplesCount % this._frequency === 0) {
                 this._currentEvent.elapsedTime++;
                 const remainingTime = this._currentEvent.duration - this._currentEvent.elapsedTime;
-                if (remainingTime === 0) {
-                    this._socket.emit("END_EVENT", this._currentEvent);
-                    if (this._events.length === 0) {
-                        if (this._loop || --this._loopTimes > 0) {
-                            this._events = lang.cloneDeep(this._originalEvents);
-                            this._startNextEvent();
-                        } else {
-                            this.stop();
-                        }
-                    } else {
-                        this._startNextEvent();
-                    }
+                if (remainingTime > 0 && remainingTime < 1) {
+                    this._remainingSamples = Math.round(this._frequency * remainingTime);
+                } else if (remainingTime === 0) {
+                   this._setUpNextRound();
                 }
             }
         });
     }
 
+    _setUpNextRound() {
+        this._samplesCount = 0;
+        this._socket.emit("END_EVENT", this._currentEvent);
+        if (this._events.length === 0) {
+            if (this._loop || --this._loopTimes > 0) {
+                this._events = lang.cloneDeep(this._originalEvents);
+                if (this._loop) {
+                    this._randomDirections = this._generateRandomDirections();
+                    this._executionTimes = this._generateExecutionTimes();
+                }
+                this._startNextEvent();
+            } else {
+                this.stop();
+            }
+        } else {
+            this._startNextEvent();
+        }
+    }
+
     _startNextEvent() {
         this._currentEvent = this._events.shift();
         this._currentEvent.direction = this._obtainEventDirection(this._currentEvent);
+        this._currentEvent.duration = this._executionTimes.shift();
+        this._currentEvent.elapsedTime = 0;
         this._currentLabel = EventType.getId(this._currentEvent.direction);
         this._socket.emit("SET_CURRENT_EVENT", this._currentEvent);
     }
@@ -162,6 +199,12 @@ class StreamData {
         this._started = false;
         await this.cleanUp();
         this._socket.emit("DATA_ACQUISITION_ENDED");
+
+        if (this._maxSamplesCount) {
+            console.log(`Writing ${this._maxSamplesCount} samples.`);
+        } else {
+            console.log("Writing samples");
+        }
         await this._writer.write(this._maxSamplesCount);
         this._socket.emit("ON_MESSAGE", "The CSV file was successfully saved.");
     }

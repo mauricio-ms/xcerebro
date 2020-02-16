@@ -30,7 +30,10 @@ function sendAddLeftOrRightEventMessage() {
 function sendAddEventMessage(direction) {
     socket.emit("ADD_EVENT", {
         direction: direction,
-        duration: document.getElementById("duration-event-input").valueAsNumber
+        duration: {
+            start: document.getElementById("start-duration-event-input").valueAsNumber,
+            end: document.getElementById("end-duration-event-input").valueAsNumber
+        }
     });
 }
 
@@ -41,7 +44,10 @@ function addEvent(event) {
 
     const directionsIcon = createIcon("text-muted fas fa-arrows-alt-h");
 
-    const contentText = ` ${DirectionEnum[event.direction]} ${event.duration}s `;
+    const durationText = event.duration.end ?
+        `${event.duration.start}s - ${event.duration.end}s` :
+        `${event.duration.start}s`;
+    const contentText = ` ${DirectionEnum[event.direction]} ${durationText} `;
     const content = document.createTextNode(contentText);
 
     const deleteLink = document.createElement("a");

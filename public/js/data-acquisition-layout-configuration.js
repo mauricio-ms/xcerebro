@@ -22,8 +22,23 @@ subjectInput.addEventListener("change", function() {
 });
 socket.on("SUBJECT_CONFIGURED", subject => subjectInput.value = subject);
 
-const durationEventInput = document.getElementById("duration-event-input");
-durationEventInput.addEventListener("change", function() {
-    socket.emit("CONFIGURE_DURATION_EVENT", this.valueAsNumber);
+const startDurationEventInput = document.getElementById("start-duration-event-input");
+startDurationEventInput.addEventListener("change", function() {
+    socket.emit("CONFIGURE_DURATION_EVENT", {
+        start: this.valueAsNumber
+    });
 });
-socket.on("DURATION_EVENT_CONFIGURED", durationEvent => durationEventInput.value = durationEvent);
+const endDurationEventInput = document.getElementById("end-duration-event-input");
+endDurationEventInput.addEventListener("change", function() {
+    socket.emit("CONFIGURE_DURATION_EVENT", {
+        end: this.valueAsNumber
+    });
+});
+socket.on("DURATION_EVENT_CONFIGURED", durationEvent => {
+    if (durationEvent.start) {
+        startDurationEventInput.value = durationEvent.start;
+    }
+    if (durationEvent.end) {
+        endDurationEventInput.value = durationEvent.end;
+    }
+});
