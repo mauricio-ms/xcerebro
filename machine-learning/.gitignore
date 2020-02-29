@@ -1,0 +1,7 @@
+# Intellij
+.idea/
+*.iml
+
+# Data files
+data/*
+!data/.gitkeep
