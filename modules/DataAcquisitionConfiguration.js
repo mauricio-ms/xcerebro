@@ -41,7 +41,7 @@ const preconfiguredEvents = [
     {
         direction: "LEFT_OR_RIGHT",
         duration: {
-            start: 4
+            start: 3.5
         }
     }
 ];
