@@ -1,10 +1,2 @@
 # Intellij
 .idea/
-*.iml
-
-# NodeJS
-node_modules/
-
-# Data files
-data/*
-!data/.gitkeep
