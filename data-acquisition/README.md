@@ -1,5 +1,5 @@
-# xcerebro-data-acquisition
-Project to make the data acquisition of motor imagery eeg data
+# data-acquisition
+Project to make the data acquisition of eeg data
 
 ## Get started
 - Run npm install
