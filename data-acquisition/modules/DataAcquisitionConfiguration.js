@@ -34,8 +34,7 @@ const preconfiguredEvents = [
     {
         direction: "REST",
         duration: {
-            start: 1.75,
-            end: 2.25
+            start: 1.5
         }
     },
     {

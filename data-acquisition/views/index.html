@@ -143,31 +143,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="row justify-content-sm-center">
-                        <div class="col-sm-12">
-                            <div class="row justify-content-between data-acquisition">
-                                <div class="col-sm-4">
-                                    <div class="row">
-                                        <span id="left-arrow" class="arrow-off">
-                                          <i class="fas fa-arrow-circle-left fa-7x"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="row justify-content-end">
-                                        <span id="right-arrow" class="arrow-off">
-                                          <i class="fas fa-arrow-circle-right fa-7x"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="float-right">
-                                <button id="stop-data-acquisition-button" type="button" class="btn btn-stop"
-                                        onclick="stopDataAcquisition()" disabled>
-                                    <i class="fas fa-stop-circle"></i> Stop
-                                </button>
-                            </div>
-                        </div>
+                        <canvas id="fixation-cross-canvas" width="600" height="200">
+                            Your browser does not support the HTML5 canvas tag.
+                        </canvas>
+                    </div>
+                    <div class="float-right">
+                        <button id="stop-data-acquisition-button" type="button" class="btn btn-stop"
+                                onclick="stopDataAcquisition()" disabled>
+                            <i class="fas fa-stop-circle"></i> Stop
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer">

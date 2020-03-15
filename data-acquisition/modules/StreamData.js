@@ -140,6 +140,12 @@ class StreamData {
             }
 
             this._samplesCount++;
+
+            for (let i=0; i<sample.channelData.length; i++) {
+                if (sample.channelData[i] !== 0) {
+                    sample.channelData[i] = Math.log(Math.abs(sample.channelData[i]));
+                }
+            }
             this._writer.appendSample(sample, this._currentLabel);
 
             if (this._remainingSamples) {
@@ -161,7 +167,6 @@ class StreamData {
 
     _setUpNextRound() {
         this._samplesCount = 0;
-        this._socket.emit("END_EVENT", this._currentEvent);
         if (this._events.length === 0) {
             if (this._loop || --this._loopTimes > 0) {
                 this._events = lang.cloneDeep(this._originalEvents);

@@ -1,12 +1,43 @@
-const ElementsByEvent = {
-    "LEFT": {
-        "arrow": document.getElementById("left-arrow")
-    },
-    "RIGHT": {
-        "arrow": document.getElementById("right-arrow")
-    }
-};
 const connectionStatusTextElement = document.getElementById("connection-status-text");
+
+const canvas = document.getElementById("fixation-cross-canvas");
+const context = canvas.getContext("2d");
+context.font="80px FontAwesome";
+
+setTimeout(() => {
+    loadFonts();
+    drawFixationCross();
+}, 1000);
+
+function loadFonts() {
+    showLeftArrow();
+    showRightArrow();
+}
+
+function drawFixationCross() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.beginPath();
+
+    context.moveTo(200, 100);
+    context.lineTo(400, 100 );
+
+    context.moveTo(300, 0);
+    context.lineTo(300, 200);
+
+    context.stroke();
+}
+
+function showLeftArrow() {
+    drawFixationCross();
+    context.fillStyle="#ff0000";
+    context.fillText("\uf30a", 230, 130);
+}
+
+function showRightArrow() {
+    drawFixationCross();
+    context.fillStyle="#ff0000";
+    context.fillText("\uf30b", 300, 130);
+}
 
 function startDataAcquisition() {
     socket.emit("START_DATA_ACQUISITION");
@@ -37,27 +68,16 @@ socket.on("DATA_ACQUISITION_ENDED", () => {
     connectionStatusTextElement.textContent = "";
     closeModal("data-acquisition-modal");
     _switchStopDataAcquisitionButton(false);
-    const leftElements = ElementsByEvent["LEFT"];
-    const rightElements = ElementsByEvent["RIGHT"];
-    leftElements["arrow"].className = "arrow-off";
-    rightElements["arrow"].className = "arrow-off";
 });
 
 socket.on("SET_CURRENT_EVENT", event => {
     if (event.direction === "REST") {
-        return;
+        drawFixationCross();
+    } else if (event.direction === "LEFT") {
+        showLeftArrow();
+    } else if (event.direction === "RIGHT") {
+        showRightArrow();
     }
-
-    const eventElements = ElementsByEvent[event.direction];
-    const arrow = eventElements["arrow"];
-    arrow.className = "arrow-on";
-});
-
-socket.on("END_EVENT", event => {
-    if (event.direction === "REST") {
-        return;
-    }
-    ElementsByEvent[event.direction]["arrow"].className = "arrow-off"
 });
 
 function _switchStopDataAcquisitionButton(enabled) {
