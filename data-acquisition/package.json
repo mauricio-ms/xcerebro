@@ -14,7 +14,7 @@
     "express": "~4.14.1",
     "kill-port": "^1.6.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "morgan": ">=1.9.1",
     "openbci": "^3.0.0",
     "socket.io": "^2.3.0"
